@@ -3,6 +3,15 @@ import streamlit as st
 import requests
 import json
 import os
+from dotenv import load_dotenv
+
+# Local dev environment loading
+try:
+    BASEDIR = os.path.abspath(os.path.dirname(__file__))
+    dotenv_path = os.path.join(BASEDIR, '../.env') 
+    load_dotenv(dotenv_path)
+except:
+    pass
 
 BACKEND_URL = os.getenv("BACKEND_URL")
 BACKEND_API_KEY = os.getenv("BACKEND_API_KEY")

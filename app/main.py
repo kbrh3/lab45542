@@ -17,18 +17,19 @@ except:
 BACKEND_URL = os.getenv("BACKEND_URL")
 BACKEND_API_KEY = os.getenv("BACKEND_API_KEY")
 
-if "backend_warm" not in st.session_state:
+def check_backend():
     try:
         requests.get(BACKEND_URL, timeout=2)
-        st.session_state["backend_warm"] = True
+        return True
     except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectionError):
-        st.session_state["backend_warm"] = False
+        return False
+api_awake = check_backend()
 
 
 # Begin page content
 st.set_page_config(page_title="CS5542 Lab 4 RAG App", layout="wide")
 st.title("CS 5542 — Lab 4 RAG App")
-if not st.session_state['backend_warm']:
+if not api_awake:
     st.warning("Backend may be booting up, please wait.")
 
 st.sidebar.header("Retrieval Settings")

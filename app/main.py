@@ -18,8 +18,11 @@ BACKEND_URL = os.getenv("BACKEND_URL")
 BACKEND_API_KEY = os.getenv("BACKEND_API_KEY")
 
 def check_backend():
+    header = {
+        "internal-api-key": BACKEND_API_KEY,
+    }
     try:
-        r = requests.get(f'{BACKEND_URL}/status', timeout=2)
+        r = requests.get(f'{BACKEND_URL}/status', timeout=2, headers=header)
         r.raise_for_status()
         return True
     except:

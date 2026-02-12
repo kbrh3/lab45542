@@ -37,7 +37,7 @@ class QueryIn(BaseModel):
     retrieval_mode: str = "mm"     # "mm" or "text_only"
     top_k: int = 8                # optional (you can wire this later)
 
-@app.get("/", dependencies=[Depends(verify_token)])
+@app.get("/status", dependencies=[Depends(verify_token)])
 def health():
     return {"status": "ok", "message": "RAG API working"}
 

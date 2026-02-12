@@ -19,9 +19,10 @@ BACKEND_API_KEY = os.getenv("BACKEND_API_KEY")
 
 def check_backend():
     try:
-        requests.get(BACKEND_URL, timeout=2)
+        r = requests.get(f'{BACKEND_URL}/status', timeout=2)
+        r.raise_for_status()
         return True
-    except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectionError):
+    except:
         return False
 api_awake = check_backend()
 

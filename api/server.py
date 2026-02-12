@@ -1,18 +1,23 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Header, HTTPException, Depends
 from pydantic import BaseModel
 from typing import Any, Dict, Optional
 from fastapi.middleware.cors import CORSMiddleware
-
+import os
 from rag.pipeline import init_pipeline, run_query_and_log, MISSING_EVIDENCE_MSG
 
 app = FastAPI(title="CS 5542 Lab 4 RAG Backend")
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://lab45542-frontend-streamlit.onrender.com/"], # Update after deploying frontend
+    allow_origins=["https://lab45542-frontend-streamlit.onrender.com/"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Add API key verification for backend
+BACKEND_API_KEY = os.getenv("BACKEND_API_KEY")
+async def verify_token(internal_api_key: str = Header(None)):
+    if internal_api_key != BACKEND_API_KEY:
+        raise HTTPException(status_code=403, detail="Forbidden")
 
 # Initialize once on server start
 init_pipeline(data_dir="data", logs_dir="logs", log_file="query_metrics.csv")
@@ -23,11 +28,11 @@ class QueryIn(BaseModel):
     retrieval_mode: str = "mm"     # "mm" or "text_only"
     top_k: int = 8                # optional (you can wire this later)
 
-@app.get("/")
+@app.get("/", dependencies=[Depends(verify_token)])
 def health():
     return {"status": "ok", "message": "RAG API working"}
 
-@app.post("/query")
+@app.post("/query", dependencies=[Depends(verify_token)])
 def query(q: QueryIn) -> Dict[str, Any]:
     # run_query_and_log expects a dict with query_id, question, gold_evidence_ids
     query_item = {"query_id": q.query_id, "question": q.question, "gold_evidence_ids": []}

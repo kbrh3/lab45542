@@ -5,6 +5,7 @@ import json
 import os
 
 BACKEND_URL = os.getenv("BACKEND_URL")
+BACKEND_API_KEY = os.getenv("BACKEND_API_KEY")
 
 st.set_page_config(page_title="CS5542 Lab 4 RAG App", layout="wide")
 st.title("CS 5542 — Lab 4 RAG App")
@@ -37,6 +38,9 @@ run = st.button("Run")
 colA, colB = st.columns([2, 1])
 
 if run and question.strip():
+    header = {
+        "internal-api-key": BACKEND_API_KEY,
+    }
     payload = {
         "query_id": query_id,
         "question": question,
@@ -45,7 +49,7 @@ if run and question.strip():
     }
 
     try:
-        r = requests.post(f"{BACKEND_URL}/query", json=payload, timeout=60)
+        r = requests.post(f"{BACKEND_URL}/query", json=payload, headers=header, timeout=60)
         r.raise_for_status()
         data = r.json()
 

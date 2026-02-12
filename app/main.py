@@ -20,6 +20,7 @@ BACKEND_API_KEY = os.getenv("BACKEND_API_KEY")
 def check_backend():
     header = {
         "internal-api-key": BACKEND_API_KEY,
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
     }
     try:
         r = requests.get(f'{BACKEND_URL}/status', timeout=2, headers=header)

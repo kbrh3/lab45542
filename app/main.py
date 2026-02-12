@@ -2,6 +2,9 @@
 import streamlit as st
 import requests
 import json
+import os
+
+BACKEND_URL = os.getenv("BACKEND_URL")
 
 st.set_page_config(page_title="CS5542 Lab 4 RAG App", layout="wide")
 st.title("CS 5542 — Lab 4 RAG App")

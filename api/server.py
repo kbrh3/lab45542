@@ -1,10 +1,18 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 from typing import Any, Dict, Optional
+from fastapi.middleware.cors import CORSMiddleware
 
 from rag.pipeline import init_pipeline, run_query_and_log, MISSING_EVIDENCE_MSG
 
 app = FastAPI(title="CS 5542 Lab 4 RAG Backend")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["https://lab45542-frontend-streamlit.onrender.com/"], # Update after deploying frontend
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Initialize once on server start
 init_pipeline(data_dir="data", logs_dir="logs", log_file="query_metrics.csv")

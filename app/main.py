@@ -20,7 +20,6 @@ BACKEND_API_KEY = os.getenv("BACKEND_API_KEY")
 def check_backend():
     header = {
         "internal-api-key": BACKEND_API_KEY,
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
     }
     try:
         r = requests.get(f'{BACKEND_URL}/status', timeout=2, headers=header)
@@ -35,7 +34,7 @@ api_awake = check_backend()
 st.set_page_config(page_title="CS5542 Lab 4 RAG App", layout="wide")
 st.title("CS 5542 — Lab 4 RAG App")
 if not api_awake:
-    st.warning("Backend may be booting up, please wait.")
+    st.warning(f"Backend is offline (Render free tier limitations). Reboot it by following this link: {BACKEND_URL}")
 
 st.sidebar.header("Retrieval Settings")
 retrieval_mode = st.sidebar.selectbox("retrieval_mode", ["mm", "text_only"])

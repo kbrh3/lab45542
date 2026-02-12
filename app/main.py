@@ -13,13 +13,23 @@ try:
 except:
     pass
 
+# Secrets
 BACKEND_URL = os.getenv("BACKEND_URL")
 BACKEND_API_KEY = os.getenv("BACKEND_API_KEY")
 
+if "backend_warm" not in st.session_state:
+    try:
+        requests.get(BACKEND_URL, timeout=2)
+        st.session_state["backend_warm"] = True
+    except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectionError):
+        st.session_state["backend_warm"] = False
+
+
+# Begin page content
 st.set_page_config(page_title="CS5542 Lab 4 RAG App", layout="wide")
 st.title("CS 5542 — Lab 4 RAG App")
-
-# API_URL = st.sidebar.text_input("FastAPI base URL", value="http://127.0.0.1:8000")
+if not st.session_state['backend_warm']:
+    st.warning("Backend may be booting up, please wait.")
 
 st.sidebar.header("Retrieval Settings")
 retrieval_mode = st.sidebar.selectbox("retrieval_mode", ["mm", "text_only"])
@@ -81,6 +91,7 @@ if run and question.strip():
             st.success("Logged to logs/query_metrics.csv (backend)")
 
     except Exception as e:
-        st.error(f"API call failed: {e}")
-        st.caption("Make sure FastAPI is running and API_URL is correct.")
+        st.error(f"API call failed")
+        print(e)
+
 

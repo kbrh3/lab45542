@@ -9,7 +9,7 @@ BACKEND_URL = os.getenv("BACKEND_URL")
 st.set_page_config(page_title="CS5542 Lab 4 RAG App", layout="wide")
 st.title("CS 5542 — Lab 4 RAG App")
 
-API_URL = st.sidebar.text_input("FastAPI base URL", value="http://127.0.0.1:8000")
+# API_URL = st.sidebar.text_input("FastAPI base URL", value="http://127.0.0.1:8000")
 
 st.sidebar.header("Retrieval Settings")
 retrieval_mode = st.sidebar.selectbox("retrieval_mode", ["mm", "text_only"])
@@ -45,7 +45,7 @@ if run and question.strip():
     }
 
     try:
-        r = requests.post(f"{API_URL}/query", json=payload, timeout=60)
+        r = requests.post(f"{BACKEND_URL}/query", json=payload, timeout=60)
         r.raise_for_status()
         data = r.json()
 

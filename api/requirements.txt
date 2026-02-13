@@ -1,6 +1,5 @@
-streamlit
 fastapi
-uvicorn
+uvicorn[standard]
 pydantic
 requests
 numpy
@@ -8,4 +7,4 @@ pandas
 scikit-learn
 pymupdf
 pillow
-dotenv
+python-dotenv

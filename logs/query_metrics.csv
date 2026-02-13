@@ -1,1 +1,1 @@
-
+timestamp,query_id,retrieval_mode,top_k_evidence,latency_ms,Precision@5,Recall@10,evidence_ids_returned,gold_evidence_ids,faithfulness_pass,missing_evidence_behavior

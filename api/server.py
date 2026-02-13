@@ -17,7 +17,7 @@ except:
 app = FastAPI(title="CS 5542 Lab 4 RAG Backend")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://lab45542-frontend-streamlit.onrender.com/"],
+    allow_origins=["https://lab45542-frontend-streamlit.onrender.com"],
     allow_methods=["*"],
     allow_headers=["*"],
 )

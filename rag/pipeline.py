@@ -404,13 +404,26 @@ def run_pipeline(
 def ensure_logfile(path: str):
     p = Path(path)
     p.parent.mkdir(parents=True, exist_ok=True)
+    header = [
+        "timestamp", "query_id", "retrieval_mode", "top_k_evidence", "latency_ms",
+        "Precision@5", "Recall@10",
+        "evidence_ids_returned", "gold_evidence_ids",
+        "faithfulness_pass", "missing_evidence_behavior"
+    ]
+    # Write header if file is missing OR exists but is empty / lacks a header row
+    write_header = False
     if not p.exists():
-        header = [
-            "timestamp", "query_id", "retrieval_mode", "top_k_evidence", "latency_ms",
-            "Precision@5", "Recall@10",
-            "evidence_ids_returned", "gold_evidence_ids",
-            "faithfulness_pass", "missing_evidence_behavior"
-        ]
+        write_header = True
+    else:
+        try:
+            with open(p, "r", encoding="utf-8") as f:
+                first_line = f.readline().strip()
+            if not first_line:
+                write_header = True
+        except Exception:
+            write_header = True
+
+    if write_header:
         with open(p, "w", newline="", encoding="utf-8") as f:
             csv.writer(f).writerow(header)
 

@@ -3,12 +3,17 @@ from pydantic import BaseModel
 from typing import Any, Dict, Optional
 from fastapi.middleware.cors import CORSMiddleware
 import os
-from rag.pipeline import init_pipeline, run_query_and_log, MISSING_EVIDENCE_MSG
+import sys
+
+# Add the parent directory to sys.path to resolve the 'rag' module
+BASEDIR = os.path.abspath(os.path.dirname(__file__))
+sys.path.append(os.path.abspath(os.path.join(BASEDIR, '..')))
+
+from rag import init_pipeline, run_query_and_log, MISSING_EVIDENCE_MSG
 from dotenv import load_dotenv
 
 # Local dev environment loading
 try:
-    BASEDIR = os.path.abspath(os.path.dirname(__file__))
     dotenv_path = os.path.join(BASEDIR, '../.env') 
     load_dotenv(dotenv_path)
 except:

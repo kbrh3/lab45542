@@ -1,5 +1,11 @@
 # CS 5542 — Lab 4: RAG Application Integration, Deployment & Monitoring
 
+## Lab 6 — Agent Integration
+
+- Task 1: Antigravity IDE analysis completed
+- Screenshot included in docx version of report
+- See task1_antigravity_report.md
+
 ## Deployed Application
 
 | Service | URL |

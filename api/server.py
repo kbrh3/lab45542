@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Header, HTTPException, Depends
 from pydantic import BaseModel
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, List
 from fastapi.middleware.cors import CORSMiddleware
 import os
 import sys
@@ -11,6 +11,9 @@ sys.path.append(os.path.abspath(os.path.join(BASEDIR, '..')))
 
 from rag import init_pipeline, run_query_and_log, MISSING_EVIDENCE_MSG
 from dotenv import load_dotenv
+
+from agent.runner import run_agent
+from agent.types import AgentResponse
 
 # Local dev environment loading
 try:
@@ -66,3 +69,23 @@ def query(q: QueryIn) -> Dict[str, Any]:
         },
         "missing_evidence_msg": MISSING_EVIDENCE_MSG,
     }
+
+class AgentQueryIn(BaseModel):
+    message: str
+    history: Optional[List[Dict[str, str]]] = None
+    max_steps: int = 5
+
+@app.post("/agent_query", dependencies=[Depends(verify_token)])
+def agent_query(q: AgentQueryIn) -> AgentResponse:
+    try:
+        return run_agent(user_message=q.message, history=q.history, max_steps=q.max_steps)
+    except Exception as e:
+        # Unhandled fatal error fallback to prevent crash
+        return {
+            "answer": f"Agent crashed unexpectedly: {str(e)}",
+            "evidence": [],
+            "metrics": {"agent_ok": False, "error_type": "fatal"},
+            "missing_evidence_msg": MISSING_EVIDENCE_MSG,
+            "tool_trace": [],
+            "errors": [str(e)]
+        }

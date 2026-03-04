@@ -85,6 +85,34 @@ lab45542/
 - **Frontend → Backend** communication is secured via an `internal-api-key` header.
 - **Logging** is automatic: every `/query` call appends a row to `logs/query_metrics.csv` with timestamp, retrieval mode, latency, Precision@5, Recall@10, evidence IDs, faithfulness, and missing-evidence behavior.
 
+## Agent Endpoint
+
+A new AI agent layer is available at `/agent_query`.
+
+**Example Request:**
+```bash
+curl -X POST http://localhost:8000/agent_query \\
+  -H "internal-api-key: your-secret-key-here" \\
+  -H "Content-Type: application/json" \\
+  -d '{"message": "What is the overall SQLENS pipeline?", "max_steps": 5}'
+```
+
+**Example Response:**
+```json
+{
+  "answer": "The SQLENS pipeline consists of...",
+  "evidence": [...],
+  "metrics": {
+    "agent_latency_ms": 1205.5,
+    "agent_steps": 2,
+    "agent_ok": true
+  },
+  "missing_evidence_msg": "...",
+  "tool_trace": [...],
+  "errors": []
+}
+```
+
 ---
 
 ## How to Run Locally
@@ -127,6 +155,13 @@ streamlit run app/main.py
 ```
 
 The Streamlit app opens at `http://localhost:8501`.
+
+### 6. Using Agent Mode
+
+1. Open the UI.
+2. Under "Mode Selection" in the sidebar, toggle **Agent Mode** On.
+3. You will see an experimental chat interface where you can ask multi-step complex queries (e.g. "What is the pipeline structure?").
+4. The agent will run background operations, render answers directly in chat, and provide collapsible sections mapping backend metrics and its internal tool executions.
 
 ---
 

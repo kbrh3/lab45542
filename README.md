@@ -15,6 +15,10 @@
 
 > **Note:** Both services run on Render's free tier and may spin down after inactivity. The first request after idle can take 30–60 seconds while the container restarts.
 
+## Demo Video
+
+[Watch the Demo Video Here](YOUR_YOUTUBE_OR_LOOM_LINK_HERE)
+
 ---
 
 ## Dataset Description
@@ -156,12 +160,19 @@ streamlit run app/main.py
 
 The Streamlit app opens at `http://localhost:8501`.
 
-### 6. Using Agent Mode
+### 6. How to run Agent Mode
 
-1. Open the UI.
-2. Under "Mode Selection" in the sidebar, toggle **Agent Mode** On.
-3. You will see an experimental chat interface where you can ask multi-step complex queries (e.g. "What is the pipeline structure?").
-4. The agent will run background operations, render answers directly in chat, and provide collapsible sections mapping backend metrics and its internal tool executions.
+Agent Mode utilizes the `/agent_query` endpoint on the backend, converting the classic Streamlit app into an interactive Chat interface capable of multi-step tool execution.
+
+**Setup Instructions:**
+1. Ensure both the backend (`uvicorn api.server:app`) and frontend (`streamlit run app/main.py`) are actively running as described above.
+2. Provide a valid `GEMINI_API_KEY` in the `.env` root file so the LLM routing logic successfully resolves.
+3. Open the UI at `http://localhost:8501`.
+4. In the left-hand sidebar under **Mode Selection**, toggle the **Agent Mode** button to On.
+5. The interface will switch to a chat window. Try asking:
+   - *"What is the overall SQLENS pipeline?"*
+   - *"How does FACT reduce inconsistent hallucinations?"*
+6. Watch the agent process your message in real-time. It will return an expandable interface parsing the `evidence`, `metrics`, `errors` and chronological `tool_trace` payloads naturally!
 
 ---
 

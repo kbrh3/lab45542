@@ -5,6 +5,7 @@
 - Task 1: Antigravity IDE analysis completed
 - Screenshot included in docx version of report
 - See task1_antigravity_report.md
+- lab 6 Demo video = https://youtu.be/zo2IeqDRkGI
 
 ## Deployed Application
 
@@ -15,11 +16,6 @@
 
 > **Note:** Both services run on Render's free tier and may spin down after inactivity. The first request after idle can take 30–60 seconds while the container restarts.
 
-## Demo Video
-
-[Watch the Demo Video Here](YOUR_YOUTUBE_OR_LOOM_LINK_HERE)
-
----
 
 ## Dataset Description
 

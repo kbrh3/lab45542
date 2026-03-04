@@ -1,7 +1,13 @@
 import time
 import json
 from typing import Dict, Any, Tuple, Callable
-from tools import rag_query, snowflake_query, bills_analytics, summarize_text
+from tools import rag_query, snowflake_query, bills_analytics
+
+try:
+    from tools import summarize_text
+except Exception:
+    summarize_text = None
+
 from .types import ToolTraceItem
 
 # Registry mapping tool names to their corresponding functions
@@ -9,8 +15,10 @@ TOOL_REGISTRY: Dict[str, Callable] = {
     "rag_query": rag_query,
     "snowflake_query": snowflake_query,
     "bills_analytics": bills_analytics,
-    "summarize_text": summarize_text,
 }
+
+if summarize_text is not None:
+    TOOL_REGISTRY["summarize_text"] = summarize_text
 
 def execute_tool(tool_name: str, args: Dict[str, Any]) -> Tuple[Dict[str, Any], ToolTraceItem]:
     """
@@ -50,7 +58,13 @@ def execute_tool(tool_name: str, args: Dict[str, Any]) -> Tuple[Dict[str, Any], 
         try:
             json.dumps(result)
         except TypeError:
-            result = {"ok": result.get("ok", False), "data": str(result.get("data", ""))}
+            safe = {"ok": bool(result.get("ok", False))}
+            if safe["ok"]:
+                safe["data"] = result.get("data")
+            else:
+                safe["error"] = result.get("error", "Tool returned non-serializable error.")
+            safe["meta"] = result.get("meta", {})
+            result = safe
             
         latency = (time.time() - t0) * 1000.0
         

@@ -40,7 +40,7 @@ def chat(messages: List[Dict[str, str]], tools: Optional[List[Dict[str, Any]]] =
         gemini_history = []
         last_message = ""
         
-        for msg in messages:
+        for i, msg in enumerate(messages):
             role = msg.get("role", "user")
             # map 'assistant' to 'model' for Gemini
             if role == "assistant":
@@ -50,13 +50,19 @@ def chat(messages: List[Dict[str, str]], tools: Optional[List[Dict[str, Any]]] =
             
             # The API generates based on the last message provided to 'generate_content'
             # The rest needs to be put in a history context if there's more than 1
-            if msg == messages[-1]:
+            if i == len(messages) - 1:
                 last_message = content
             else:
                 gemini_history.append({"role": role, "parts": [content]})
                 
         # Initialize
-        model = genai.GenerativeModel('gemini-1.5-flash', tools=tools)
+        meta = {}
+        try:
+            model = genai.GenerativeModel('gemini-1.5-flash', tools=tools)
+        except Exception as e:
+            model = genai.GenerativeModel('gemini-1.5-flash')
+            meta["tools_enabled"] = False
+            meta["tools_error"] = str(e)
         
         chat_session = model.start_chat(history=gemini_history)
         
@@ -80,11 +86,16 @@ def chat(messages: List[Dict[str, str]], tools: Optional[List[Dict[str, Any]]] =
             elif hasattr(part, 'text') and part.text:
                 content += part.text
                 
-        return {
+        result = {
             "ok": True,
-            "content": content.strip() if content else None,
-            "tool_calls": tool_calls if tool_calls else None
+            "content": content.strip() if content else "",
+            "tool_calls": tool_calls
         }
+        
+        if meta:
+            result["meta"] = meta
+            
+        return result
         
     except Exception as e:
         return {

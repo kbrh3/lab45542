@@ -1,12 +1,13 @@
-# CS 5542 — Lab 4: RAG Application Integration, Deployment & Monitoring
 
-## Lab 6 — Agent Integration
+
+# Lab 6 — Agent Integration
 
 - Task 1: Antigravity IDE analysis completed
 - Screenshot included in docx version of report
 - See task1_antigravity_report.md
 - lab 6 Demo video = https://youtu.be/zo2IeqDRkGI
 
+# CS 5542 — Lab 4: RAG Application Integration, Deployment & Monitoring
 ## Deployed Application
 
 | Service | URL |

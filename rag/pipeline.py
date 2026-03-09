@@ -181,6 +181,7 @@ _STATE: Dict[str, Any] = {
     "pdf_dir": None,
     "fig_dir": None,
     "logs_dir": None,
+    "base_logs_dir": None,
     "log_file": None,
     "pdfs": [],
     "page_chunks": [],
@@ -194,8 +195,9 @@ _STATE: Dict[str, Any] = {
 
 def init_pipeline(
     data_dir: str = "data",
-    logs_dir: str = "logs",
+    logs_dir: str = "artifacts/runs",
     log_file: str = "query_metrics.csv",
+    use_run_id: bool = True,
 ) -> Dict[str, Any]:
     """
     Call once at app start. Builds indexes.
@@ -205,18 +207,25 @@ def init_pipeline(
 
     data_dir = str(data_dir)
     logs_dir = str(logs_dir)
-    log_path = os.path.join(logs_dir, log_file)
+
+    # If already initialized for same dirs, do nothing
+    if _STATE["initialized"] and _STATE["data_dir"] == data_dir and _STATE.get("base_logs_dir") == logs_dir:
+        return _STATE
+
+    if use_run_id:
+        run_id = datetime.now().strftime("%Y%m%d_%H%M%S")
+        actual_logs_dir = os.path.join(logs_dir, run_id)
+    else:
+        actual_logs_dir = logs_dir
+
+    log_path = os.path.join(actual_logs_dir, log_file)
 
     pdf_dir = os.path.join(data_dir, "pdfs")
     fig_dir = os.path.join(data_dir, "figures")
 
     os.makedirs(pdf_dir, exist_ok=True)
     os.makedirs(fig_dir, exist_ok=True)
-    os.makedirs(logs_dir, exist_ok=True)
-
-    # If already initialized for same dirs, do nothing
-    if _STATE["initialized"] and _STATE["data_dir"] == data_dir and _STATE["logs_dir"] == logs_dir:
-        return _STATE
+    os.makedirs(actual_logs_dir, exist_ok=True)
 
     # Load PDFs
     pdfs = sorted(glob.glob(os.path.join(pdf_dir, "*.pdf")))
@@ -254,7 +263,8 @@ def init_pipeline(
         "data_dir": data_dir,
         "pdf_dir": pdf_dir,
         "fig_dir": fig_dir,
-        "logs_dir": logs_dir,
+        "logs_dir": actual_logs_dir,
+        "base_logs_dir": logs_dir,
         "log_file": log_path,
         "pdfs": pdfs,
         "page_chunks": page_chunks,

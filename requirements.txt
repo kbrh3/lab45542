@@ -1,0 +1,11 @@
+fastapi
+uvicorn[standard]
+pydantic
+requests
+numpy
+pandas
+scikit-learn
+pymupdf
+pillow
+python-dotenv
+streamlit

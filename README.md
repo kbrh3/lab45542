@@ -54,8 +54,9 @@ lab45542/
 ├── data/
 │   ├── pdfs/                  # PDF documents
 │   └── figures/               # Multimodal image assets
-├── logs/
-│   └── query_metrics.csv      # Automatic evaluation log (appended per query)
+├── artifacts/
+│   └── runs/                  # Automatic evaluation logs (per-run directories)
+│       └── <run_id>/query_metrics.csv
 ├── render.yaml                # Render deployment blueprint
 ├── .gitignore
 └── README.md
@@ -84,7 +85,7 @@ lab45542/
 ```
 
 - **Frontend → Backend** communication is secured via an `internal-api-key` header.
-- **Logging** is automatic: every `/query` call appends a row to `logs/query_metrics.csv` with timestamp, retrieval mode, latency, Precision@5, Recall@10, evidence IDs, faithfulness, and missing-evidence behavior.
+- **Logging** is automatic: every `/query` call appends a row to a per-run metrics file `artifacts/runs/<run_id>/query_metrics.csv` with timestamp, retrieval mode, latency, Precision@5, Recall@10, evidence IDs, faithfulness, and missing-evidence behavior. (Note: The old `logs/query_metrics.csv` fallback is still supported.)
 
 ## Agent Endpoint
 
@@ -116,46 +117,53 @@ curl -X POST http://localhost:8000/agent_query \\
 
 ---
 
-## How to Run Locally
+## Local Run (Recommended)
 
-### Prerequisites
-- Python 3.10+
+**Prerequisites:** Python 3.10+
 
-### 1. Clone and install
-
+**1. Clone & setup virtual environment:**
 ```bash
 git clone https://github.com/kbrh3/lab45542.git
 cd lab45542
-pip install -r api/requirements.txt
-pip install -r app/requirements.txt
+
+# Create and activate venv
+python -m venv .venv
+# Mac/Linux:
+source .venv/bin/activate
+# Windows:
+# .venv\Scripts\activate
+
+# Upgrade pip and install dependencies
+pip install --upgrade pip
+pip install -r requirements.txt
 ```
 
-### 2. Add data
-
+**2. Add data:**
 Place PDF files in `data/pdfs/` and screenshot images in `data/figures/`.
 
-### 3. Set environment variables
+**3. Configure Environment Variables:**
+Create a `.env` file in the project root. (Note: `.env` is gitignored; *never commit secrets!*)
 
-Create a `.env` file in the project root:
-
-```
+```env
 BACKEND_URL=http://localhost:8000
 BACKEND_API_KEY=your-secret-key-here
+# Optional: Required only for Agent Mode
+GEMINI_API_KEY=your-gemini-api-key 
 ```
 
-### 4. Start the backend
-
+**4. Start Backend (Terminal 1):**
 ```bash
 uvicorn api.server:app --host 0.0.0.0 --port 8000
 ```
+*Backend URL:* http://localhost:8000
+*(Quick check: `curl http://localhost:8000/health`)*
 
-### 5. Start the frontend (in a new terminal)
-
+**5. Start Frontend (Terminal 2):**
 ```bash
+# Make sure .venv is activated here too!
 streamlit run app/main.py
 ```
-
-The Streamlit app opens at `http://localhost:8501`.
+*Frontend URL:* http://localhost:8501
 
 ### 6. How to run Agent Mode
 
@@ -175,7 +183,7 @@ Agent Mode utilizes the `/agent_query` endpoint on the backend, converting the c
 
 ## Automatic Evaluation Logging
 
-Every query automatically appends a row to `logs/query_metrics.csv` with these fields:
+Every query automatically appends a row to `artifacts/runs/<run_id>/query_metrics.csv` with these fields:
 
 | Field | Description |
 |-------|-------------|

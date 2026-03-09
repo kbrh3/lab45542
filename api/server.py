@@ -37,13 +37,17 @@ async def verify_token(internal_api_key: str = Header(None)):
         raise HTTPException(status_code=403, detail="Forbidden")
 
 # Initialize once on server start
-init_pipeline(data_dir="data", logs_dir="logs", log_file="query_metrics.csv")
+init_pipeline(data_dir="data")
 
 class QueryIn(BaseModel):
     query_id: str
     question: str
     retrieval_mode: str = "mm"     # "mm" or "text_only"
     top_k: int = 8                # optional (you can wire this later)
+
+@app.get("/health")
+def health_check():
+    return {"status": "ok"}
 
 @app.get("/status", dependencies=[Depends(verify_token)])
 def health():

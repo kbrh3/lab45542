@@ -9,3 +9,4 @@ pymupdf
 pillow
 python-dotenv
 streamlit
+snowflake-connector-python

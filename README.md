@@ -119,7 +119,7 @@ curl -X POST http://localhost:8000/agent_query \\
 
 ## Local Run (Recommended)
 
-**Prerequisites:** Python 3.10+
+**Prerequisites:** Python 3.12.10
 
 **1. Clone & setup virtual environment:**
 ```bash
@@ -133,7 +133,7 @@ source .venv/bin/activate
 # Windows:
 # .venv\Scripts\activate
 
-# Upgrade pip and install dependencies
+# Upgrade pip and install exact pinned dependencies
 pip install --upgrade pip
 pip install -r requirements.txt
 ```

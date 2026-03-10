@@ -1,0 +1,34 @@
+[
+  {
+    "query": "How does SQLENS identify errors in generated SQL queries?",
+    "expected": ["syntax check", "execution accuracy", "database schema"]
+  },
+  {
+    "query": "What is the primary goal of the FACT framework in language generation?",
+    "expected": ["hallucination reduction", "factual consistency", "error detection"]
+  },
+  {
+    "query": "Which metric does ALIGNRAG use to evaluate the quality of retrieved passages?",
+    "expected": ["relevance alignment", "retrieval accuracy", "contextual fit"]
+  },
+  {
+    "query": "What are common techniques for hallucination reduction in large language models?",
+    "expected": ["retrieval augmentation", "fact checking", "confidence scoring"]
+  },
+  {
+    "query": "How can error detection be improved in RAG pipelines?",
+    "expected": ["grounding", "verification step", "human-in-the-loop"]
+  },
+  {
+    "query": "How does ALIGNRAG handle conflicting information during generation?",
+    "expected": ["source weighting", "majority vote", "conflict resolution"]
+  },
+  {
+    "query": "What type of benchmarks are used for evaluating FACT's factual consistency?",
+    "expected": ["summarization datasets", "QA tasks", "knowledge grounding"]
+  },
+  {
+    "query": "In the context of SQLENS, how does the model handle complex joins?",
+    "expected": ["schema linkage", "join inference", "table relationships"]
+  }
+]

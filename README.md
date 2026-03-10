@@ -167,6 +167,8 @@ streamlit run app/main.py
 
 Agent Mode utilizes the `/agent_query` endpoint on the backend, converting the classic Streamlit app into an interactive Chat interface capable of multi-step tool execution.
 
+**Note:** Gemini/Agent mode requires extra optional dependencies and API key. reproduce.sh and smoke tests run without them.
+
 **Setup Instructions:**
 1. Ensure both the backend (`uvicorn api.server:app`) and frontend (`streamlit run app/main.py`) are actively running as described above.
 2. Provide a valid `GEMINI_API_KEY` in the `.env` root file so the LLM routing logic successfully resolves.

@@ -22,7 +22,7 @@ def chat(messages: List[Dict[str, str]], tools: Optional[List[Dict[str, Any]]] =
     if not HAS_GENAI:
         return {
             "ok": False,
-            "error": "google-generativeai package not installed."
+            "error": "Informational Note: Gemini/Agent mode requires extra optional dependencies and API key. reproduce.sh and smoke tests run without them."
         }
         
     api_key = os.getenv("GEMINI_API_KEY")

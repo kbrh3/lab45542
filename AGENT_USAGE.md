@@ -14,12 +14,13 @@ This document tracks the usage of Agentic AI tools during the development and re
 5. [Placeholder: e.g. Generated `reproduce.sh` for one-command deterministic setup]
 6. [Placeholder]
 
-## Human Verification Steps
+## Human Verification Performed
 *List how the automated changes were validated by human review here:*
-- [Placeholder: e.g. Reviewed generated `reproduce.sh` bash syntax for compatibility across OS]
-- [Placeholder: e.g. Verified `health` endpoint returns 200 via `curl http://localhost:8000/health`]
-- [Placeholder: e.g. Confirmed Agent responses locally via Streamlit UI toggle]
-- [Placeholder]
+- Fresh clone run completed successfully
+- Command: `bash reproduce.sh`
+- Output artifact: `artifacts/runs/20260310_160359/query_metrics.csv`
+- Smoke tests passed without external API keys
+- Verified on Commit Hash: `a90d67908a6397e12a9855a36f31e15a182aad15`
 
 ## Issues/Bugs Introduced & Fixes
 *Document any bugs introduced by the AI and how they were resolved here:*

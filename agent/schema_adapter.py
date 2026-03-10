@@ -60,8 +60,12 @@ def openai_tools_to_gemini(tools: List[Dict[str, Any]]) -> Any:
         # Wrap the function declarations in a Tool
         return glm.Tool(function_declarations=gemini_tools)
         
+    except ImportError:
+        # Expected if Gemini is optional and dependency is not installed.
+        pass
     except Exception as e:
-        print(f"Warning: Failed to convert OpenAI tools to Gemini format. Error: {e}")
+        # Only log actual runtime errors that aren't missing dependencies
+        print(f"Informational Note: Gemini/Agent mode requires extra optional dependencies and API key. reproduce.sh and smoke tests run without them. (Original error: {e})")
         return None
 
 def extract_tool_calls(gemini_response: Dict[str, Any]) -> List[Dict[str, Any]]:

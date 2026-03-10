@@ -57,5 +57,11 @@ The smoke test (`tests/test_smoke.py`) validates the core extraction and retriev
 
 ---
 **Audit Log Details:**
-- **Commit Hash:** `<INSERT_COMMIT_HASH_HERE>`
-- **Run ID Example:** `<INSERT_RUN_ID_EXAMPLE_HERE>`
+- **Commit Hash:** `a90d67908a6397e12a9855a36f31e15a182aad15`
+- **Run ID Example:** `20260310_160359`
+
+## Reproducibility Evidence
+- **Command Run:** `bash reproduce.sh`
+- **Artifact Produced:** `artifacts/runs/20260310_160359/query_metrics.csv`
+
+Gemini/Agent mode requires extra optional dependencies and API key. reproduce.sh and smoke tests run without them.

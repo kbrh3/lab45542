@@ -47,6 +47,7 @@ The smoke test (`tests/test_smoke.py`) validates the core extraction and retriev
 - Verifies `init_pipeline()` successfully indexes both file types locally.
 - Tests `run_pipeline()` with an arbitrary query.
 - Employs `unittest.mock` to intercept and bypass LLM calls within `agent/runner.py`.
+- **Snowflake Independence:** The `snowflake_query` tools are guarded by a `USE_SNOWFLAKE=false` default environment block, ensuring pipeline tests remain decoupled from external database states.
 - **Duration:** < 1 second.
 
 ## Known Limitations / Nondeterminism

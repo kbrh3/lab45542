@@ -76,6 +76,14 @@ def snowflake_query(sql: str, limit: int = 50) -> Dict[str, Any]:
             "meta": {"latency_ms": latency}
         }
         
+    if os.getenv("USE_SNOWFLAKE", "false").lower() != "true":
+        latency = (time.time() - t0) * 1000.0
+        return {
+            "ok": False,
+            "error": "Snowflake configuration is disabled by default. Set USE_SNOWFLAKE=true to enable.",
+            "meta": {"latency_ms": latency}
+        }
+
     try:
         # Check required env vars
         req_vars = ["SNOWFLAKE_ACCOUNT", "SNOWFLAKE_USER", "SNOWFLAKE_PASSWORD", 

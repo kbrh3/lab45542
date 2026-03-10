@@ -12,14 +12,21 @@ echo "=========================================="
 # 1. Setup Virtual Environment
 if [ ! -d ".venv" ]; then
     echo "[1/4] Creating virtual environment '.venv'..."
-    python3 -m venv .venv
+    python -m venv .venv
 else
     echo "[1/4] Virtual environment '.venv' already exists."
 fi
 
+# Determine python path
+if [ -f ".venv/Scripts/python.exe" ]; then
+    PYTHON=".venv/Scripts/python.exe"
+else
+    PYTHON=".venv/bin/python"
+fi
+
 # Activate venv
 echo "      Activating virtual environment..."
-if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "win32" ]]; then
+if [ -f ".venv/Scripts/activate" ]; then
     source .venv/Scripts/activate
 else
     source .venv/bin/activate
@@ -27,18 +34,18 @@ fi
 
 # 2. Install dependencies
 echo "[2/4] Installing dependencies from requirements.txt..."
-python -m pip install --upgrade pip
-pip install -r requirements.txt
+$PYTHON -m pip install --upgrade pip
+$PYTHON -m pip install -r requirements.txt
 
 # 3. Run Smoke Tests
 echo "[3/4] Running smoke tests (requires NO external API keys)..."
-python -m unittest tests/test_smoke.py
+$PYTHON -m unittest tests/test_smoke.py
 
 # 4. Generate Reproducibility Run (Artifacts)
 echo "[4/4] Executing a single pipeline run..."
 
 # Inline Python script to run a query and trigger artifact generation
-python3 -c "
+$PYTHON -c "
 import sys
 import os
 from rag.pipeline import run_query_and_log, get_mini_gold

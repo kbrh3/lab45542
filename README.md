@@ -142,14 +142,12 @@ pip install -r requirements.txt
 Place PDF files in `data/pdfs/` and screenshot images in `data/figures/`.
 
 **3. Configure Environment Variables:**
-Create a `.env` file in the project root. (Note: `.env` is gitignored; *never commit secrets!*)
+Create your local environment configuration by copying the example file:
 
-```env
-BACKEND_URL=http://localhost:8000
-BACKEND_API_KEY=your-secret-key-here
-# Optional: Required only for Agent Mode
-GEMINI_API_KEY=your-gemini-api-key 
+```bash
+cp .env.example .env
 ```
+*(Note: `.env` is gitignored; never commit secrets! Open your new `.env` file and replace the placeholder values with your actual credentials).*
 
 **4. Start Backend (Terminal 1):**
 ```bash

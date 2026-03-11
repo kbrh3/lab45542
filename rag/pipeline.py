@@ -23,6 +23,8 @@ import fitz  # pymupdf
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.preprocessing import normalize
 
+ENABLE_ERAG_EVAL = os.environ.get("ENABLE_ERAG_EVAL", "false").lower() == "true"
+
 
 # -----------------------------
 # Config (keep consistent w Lab3)
@@ -45,27 +47,32 @@ mini_gold = [
     {
         "query_id": "Q1",
         "question": "What is the overall SQLENS pipeline and what happens in each step?",
-        "gold_evidence_ids": []  # fill later
+        "gold_evidence_ids": [],  # fill later
+        "expected_concepts": ["error detector", "error selector", "error fixer"]
     },
     {
         "query_id": "Q2",
         "question": "What semantic error types are shown in the causal graph and what signals are used to detect them?",
-        "gold_evidence_ids": []  # fill later
+        "gold_evidence_ids": [],  # fill later
+        "expected_concepts": ["ambiguity", "evidence violation", "join predicate"]
     },
     {
         "query_id": "Q3",
         "question": "How does FACT reduce inconsistent hallucinations, and what kinds of hallucinations does it target?",
-        "gold_evidence_ids": []  # fill later
+        "gold_evidence_ids": [],  # fill later
+        "expected_concepts": ["inconsistent hallucinations", "fact text", "code-text training"]
     },
     {
         "query_id": "Q4",
         "question": "Using the figure of the SQLENS pipeline, list the pipeline stages in order.",
-        "gold_evidence_ids": []  # fill later with screenshot filename(s)
+        "gold_evidence_ids": [],  # fill later with screenshot filename(s)
+        "expected_concepts": ["error detector", "error selector", "error fixer", "sql auditor"]
     },
     {
         "query_id": "Q5",
         "question": "Who won the FIFA World Cup in 2050?",
-        "gold_evidence_ids": ["N/A"]
+        "gold_evidence_ids": ["N/A"],
+        "expected_concepts": []
     },
 ]
 
@@ -420,6 +427,9 @@ def ensure_logfile(path: str):
         "evidence_ids_returned", "gold_evidence_ids",
         "faithfulness_pass", "missing_evidence_behavior"
     ]
+    if ENABLE_ERAG_EVAL:
+        header.extend(["erag_P_1", "erag_P_3", "erag_P_5"])
+        
     # Write header if file is missing OR exists but is empty / lacks a header row
     write_header = False
     if not p.exists():
@@ -430,6 +440,10 @@ def ensure_logfile(path: str):
                 first_line = f.readline().strip()
             if not first_line:
                 write_header = True
+            elif ENABLE_ERAG_EVAL and "erag_P_1" not in first_line:
+                # If we enabled eRAG but the file doesn't have the header, it's safer to just append anyway.
+                # Production apps might rotate logs; we will just leave it.
+                pass
         except Exception:
             write_header = True
 
@@ -437,6 +451,23 @@ def ensure_logfile(path: str):
         with open(p, "w", newline="", encoding="utf-8") as f:
             csv.writer(f).writerow(header)
 
+def text_generator(queries_and_documents):
+    outputs = {}
+    for query, docs in queries_and_documents.items():
+        outputs[query] = " ".join([str(d).lower() for d in docs])
+    return outputs
+
+def downstream_metric(generated_outputs, expected_outputs):
+    scores = {}
+    for query, gen_out in generated_outputs.items():
+        exp_out = expected_outputs.get(query, [])
+        matched = False
+        for expected in exp_out:
+            if expected.lower() in gen_out.lower():
+                matched = True
+                break
+        scores[query] = 1.0 if matched else 0.0
+    return scores
 
 def precision_at_k_ids(retrieved_ids: List[str], gold_ids: List[str], k: int = 5):
     if not gold_ids or gold_ids == ["N/A"]:
@@ -496,6 +527,31 @@ def run_query_and_log(
 
     faithful = faithfulness_heuristic(answer, ctx["evidence"])
     meb = missing_evidence_behavior(answer, ctx["evidence"])
+    
+    erag_metrics = {"P_1": "", "P_3": "", "P_5": ""}
+    if ENABLE_ERAG_EVAL:
+        try:
+            import erag
+            texts = [ev["text"] for ev in ctx["evidence"] if ev["modality"] == "text"]
+            expected_concepts = query_item.get("expected_concepts", [])
+            retrieval_results = {question: texts}
+            expected_outputs = {question: expected_concepts}
+            
+            # Use deterministic functions
+            eval_results = erag.eval(
+                retrieval_results=retrieval_results,
+                expected_outputs=expected_outputs,
+                text_generator=text_generator,
+                downstream_metric=downstream_metric,
+                retrieval_metrics={"P_1", "P_3", "P_5"}
+            )
+            # eRAG returns {"aggregated": {...}, "per_input": {...}}
+            if "aggregated" in eval_results:
+                erag_metrics["P_1"] = eval_results["aggregated"].get("P_1", 0.0)
+                erag_metrics["P_3"] = eval_results["aggregated"].get("P_3", 0.0)
+                erag_metrics["P_5"] = eval_results["aggregated"].get("P_5", 0.0)
+        except Exception as e:
+            print(f"Warning: eRAG evaluation failed: {e}")
 
     row = [
         datetime.now(timezone.utc).isoformat(),
@@ -510,12 +566,15 @@ def run_query_and_log(
         "Yes" if faithful else "No",
         meb
     ]
+    
+    if ENABLE_ERAG_EVAL:
+        row.extend([erag_metrics["P_1"], erag_metrics["P_3"], erag_metrics["P_5"]])
 
     ensure_logfile(_STATE["log_file"])
     with open(_STATE["log_file"], "a", newline="", encoding="utf-8") as f:
         csv.writer(f).writerow(row)
 
-    return {
+    res = {
         "answer": answer,
         "ctx": ctx,
         "p5": p5,
@@ -524,6 +583,9 @@ def run_query_and_log(
         "faithful": faithful,
         "meb": meb
     }
+    if ENABLE_ERAG_EVAL:
+        res["erag"] = erag_metrics
+    return res
 
 
 # -----------------------------

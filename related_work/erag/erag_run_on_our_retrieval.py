@@ -49,10 +49,11 @@ def run_erag_evaluation(gold_dataset_path: str, top_k: int = 5):
         
     print(f"Loaded {len(gold_data)} queries.")
     
-    print("Initializing RAG pipeline (loading vectors)...")
-    # init_pipeline() handles data loading and tf-idf indexing exactly as reproduce.sh does
-    # This ensures consistency in indexing and log directory creation.
-    pipeline_state = init_pipeline()
+    # Initialize pipeline with project roots data directory to avoid missing data RuntimeError
+    pipeline_state = init_pipeline(
+        data_dir=os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'data')),
+        logs_dir=os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'artifacts', 'runs')),
+    )
     
     retrieval_results = {}
     expected_outputs = {}

@@ -1,0 +1,8 @@
+erag==0.0.1
+numpy==2.4.2
+scikit-learn==1.8.0
+pandas==2.3.3
+python-dotenv==1.2.2
+pymupdf==1.27.1
+pillow==12.1.1
+requests==2.32.5

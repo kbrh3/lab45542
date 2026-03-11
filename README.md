@@ -199,6 +199,20 @@ Every query automatically appends a row to `artifacts/runs/<run_id>/query_metric
 | `faithfulness_pass` | Yes/No — heuristic grounding check |
 | `missing_evidence_behavior` | Pass/Fail — correct handling when no evidence exists |
 
+*(When **`ENABLE_ERAG_EVAL=true`** is set, three additional columns are appended: `erag_P_1`, `erag_P_3`, and `erag_P_5` tracking retrieval concept precision).*
+
+### eRAG Evaluation (Optional)
+You can optionally compute eRAG retrieval quality scores for your runs. This mode uses a deterministic text generation and downstream metric (no LLM required) to see if required concepts were successfully retrieved.
+
+To enable this, set the following environment variable (ensure `erag` package is installed):
+```bash
+# Mac/Linux
+export ENABLE_ERAG_EVAL=true
+
+# Windows PowerShell
+$env:ENABLE_ERAG_EVAL="true"
+```
+
 ---
 
 ## Results Snapshot

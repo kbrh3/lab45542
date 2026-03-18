@@ -2,12 +2,12 @@
 """
 rag/pipeline.py
 
-Lab 4 pipeline module (based on your Lab 3 code), refactored by chat GPT to run in a repo:
-- PDFs in:   data/pdfs/
-- Images in: data/figures/
-- Logs in:   logs/query_metrics.csv
+Primary Retrieval Pipeline
+Refactored to actively connect to Snowflake BILLS for text retrieval.
+(Legacy PDF/Image indexing code handles have been bypassed).
+- Logs in:   artifacts/runs/query_metrics.csv
 
-This file is safe to import from Streamlit (no notebook/Colab-only commands).
+This file is safe to import from Streamlit.
 """
 
 import os, re, glob, json, time, csv
@@ -46,31 +46,31 @@ np.random.seed(RANDOM_SEED)
 mini_gold = [
     {
         "query_id": "Q1",
-        "question": "What is the overall SQLENS pipeline and what happens in each step?",
-        "gold_evidence_ids": [],  # fill later
-        "expected_concepts": ["error detector", "error selector", "error fixer"]
+        "question": "Which bill addresses the regulation of autonomous vehicles on public highways?",
+        "gold_evidence_ids": [],  # fill later with bill IDs
+        "expected_concepts": ["autonomous vehicles", "highway safety", "regulation"]
     },
     {
         "query_id": "Q2",
-        "question": "What semantic error types are shown in the causal graph and what signals are used to detect them?",
+        "question": "What is the current status and committee assignment of the Clean Energy Transition Act?",
         "gold_evidence_ids": [],  # fill later
-        "expected_concepts": ["ambiguity", "evidence violation", "join predicate"]
+        "expected_concepts": ["clean energy", "committee on energy", "passed"]
     },
     {
         "query_id": "Q3",
-        "question": "How does FACT reduce inconsistent hallucinations, and what kinds of hallucinations does it target?",
+        "question": "Summarize the major provisions in the healthcare reform bill regarding prescription drug pricing.",
         "gold_evidence_ids": [],  # fill later
-        "expected_concepts": ["inconsistent hallucinations", "fact text", "code-text training"]
+        "expected_concepts": ["prescription drugs", "price caps", "medicare negotiation"]
     },
     {
         "query_id": "Q4",
-        "question": "Using the figure of the SQLENS pipeline, list the pipeline stages in order.",
-        "gold_evidence_ids": [],  # fill later with screenshot filename(s)
-        "expected_concepts": ["error detector", "error selector", "error fixer", "sql auditor"]
+        "question": "What were the last actions taken regarding the comprehensive tax reform legislation?",
+        "gold_evidence_ids": [],  # fill later
+        "expected_concepts": ["tax reform", "last action", "floor vote"]
     },
     {
         "query_id": "Q5",
-        "question": "Who won the FIFA World Cup in 2050?",
+        "question": "Which bill establishes federal funding for time travel research and paradox prevention?",
         "gold_evidence_ids": ["N/A"],
         "expected_concepts": []
     },
@@ -78,7 +78,7 @@ mini_gold = [
 
 
 # -----------------------------
-# Captions (carry over from Lab3)
+# Captions (Legacy Lab 3 paper mappings)
 # -----------------------------
 caption_map = {
     "Screenshot 2026-02-12 085908.png": "SQLENS pipeline: Error Detector -> Error Selector -> Error Fixer -> SQL Auditor",
@@ -110,7 +110,7 @@ class ImageItem:
 
 
 # -----------------------------
-# Helpers
+# Helpers (Legacy PDF extraction and TF-IDF)
 # -----------------------------
 def clean_text(s: str) -> str:
     s = s or ""
@@ -229,41 +229,13 @@ def init_pipeline(
 
     pdf_dir = os.path.join(data_dir, "pdfs")
     fig_dir = os.path.join(data_dir, "figures")
-
-    os.makedirs(pdf_dir, exist_ok=True)
-    os.makedirs(fig_dir, exist_ok=True)
     os.makedirs(actual_logs_dir, exist_ok=True)
 
-    # Load PDFs
-    pdfs = sorted(glob.glob(os.path.join(pdf_dir, "*.pdf")))
-
-    # Extract pages
-    page_chunks: List[TextChunk] = []
-    for p in pdfs:
-        page_chunks.extend(extract_pdf_pages(p))
-
-    # Load images
-    image_items = load_images(fig_dir)
-
-    # Apply caption_map
-    if caption_map:
-        for it in image_items:
-            if it.item_id in caption_map:
-                it.caption = caption_map[it.item_id]
-
-    # Build indexes
-    text_vec, text_X = (None, None)
-    if page_chunks:
-        text_vec, text_X = build_tfidf_index_text(page_chunks)
-
-    img_vec, img_X = (None, None)
-    if image_items:
-        img_vec, img_X = build_tfidf_index_images(image_items)
-
-    if not page_chunks and not image_items:
-        raise RuntimeError(
-            "No data found. Put PDFs in data/pdfs/ and images in data/figures/."
-        )
+    print("Initializing Snowflake retrieval mode. Local PDF indexing logic bypassed.")
+    pdfs = []
+    page_chunks = []
+    image_items = []
+    text_vec, text_X, img_vec, img_X = None, None, None, None
 
     _STATE.update({
         "initialized": True,
@@ -353,9 +325,8 @@ def run_pipeline(
 ) -> Dict[str, Any]:
     """
     Main call used by Streamlit.
-    retrieval_mode:
-      - "mm"        : multimodal (text+image captions) fusion
-      - "text_only" : text pages only
+    (Note: "retrieval_mode" is preserved for API compatibility, 
+    but the system now exclusively routes to Snowflake retrieval natively).
     """
     use_multimodal = (retrieval_mode == "mm")
     ctx = build_context(

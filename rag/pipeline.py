@@ -298,55 +298,10 @@ def build_context(
     use_multimodal: bool = True,
 ) -> Dict[str, Any]:
 
-    page_chunks = _STATE["page_chunks"]
-    image_items = _STATE["image_items"]
-    text_vec, text_X = _STATE["text_vec"], _STATE["text_X"]
-    img_vec, img_X = _STATE["img_vec"], _STATE["img_X"]
-
-    text_hits = []
-    if text_vec is not None and text_X is not None and page_chunks:
-        text_hits = tfidf_retrieve(question, text_vec, text_X, top_k=top_k_text)
-
-    img_hits = []
-    if use_multimodal and img_vec is not None and img_X is not None and image_items:
-        img_hits = tfidf_retrieve(question, img_vec, img_X, top_k=top_k_images)
-
-    text_norm = _normalize_scores(text_hits)
-    img_norm  = _normalize_scores(img_hits)
-
-    fused: List[Dict[str, Any]] = []
-
-    # Text evidence
-    for idx, s in text_norm:
-        ch = page_chunks[idx]
-        fused.append({
-            "modality": "text",
-            "id": ch.chunk_id,
-            "raw_score": float(dict(text_hits).get(idx, 0.0)),
-            "fused_score": float(alpha * s),
-            "text": ch.text,
-            "path": None,
-            "citation_tag": f"[{ch.chunk_id}]",
-            "source": ch.doc_id,
-            "page_num": ch.page_num,
-        })
-
-    # Image evidence
-    for idx, s in img_norm:
-        it = image_items[idx]
-        fused.append({
-            "modality": "image",
-            "id": it.item_id,
-            "raw_score": float(dict(img_hits).get(idx, 0.0)),
-            "fused_score": float((1.0 - alpha) * s),
-            "text": it.caption,
-            "path": it.path,
-            "citation_tag": f"[{it.item_id}]",
-            "source": it.item_id,
-            "page_num": None,
-        })
-
-    fused = sorted(fused, key=lambda d: d["fused_score"], reverse=True)[:top_k_evidence]
+    from rag.snowflake_retriever import retrieve
+    
+    # Bypass original local memory indexes and fetch directly via Snowflake SQL matching
+    fused = retrieve(question, top_k=top_k_evidence)
 
     ctx_lines = []
     image_paths = []

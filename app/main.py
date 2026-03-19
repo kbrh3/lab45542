@@ -38,8 +38,9 @@ api_awake = check_backend()
 
 
 # Begin page content
-st.set_page_config(page_title="CS5542 Lab 4 RAG App", layout="wide")
-st.title("CS 5542 — Lab 4 RAG App")
+st.set_page_config(page_title="PolicyPulse — Legislative AI Assistant", layout="wide")
+st.title("PolicyPulse — Legislative AI Assistant")
+st.caption("Domain-adapted AI for U.S. legislative bill analysis, powered by LoRA fine-tuning and Snowflake retrieval.")
 if not api_awake:
     st.warning(f"Backend is offline (Render free tier limitations). Reboot it by following this link: {BACKEND_URL}")
 
@@ -51,18 +52,21 @@ if "agent_history" not in st.session_state:
 st.sidebar.header("Mode Selection")
 agent_mode_on = st.sidebar.toggle("Agent Mode", value=False)
 
+st.sidebar.header("Model Settings")
+model_mode = st.sidebar.radio("Model", ["Adapted (LoRA)", "Baseline"], index=0)
+
 st.sidebar.header("Retrieval Settings")
 retrieval_mode = st.sidebar.selectbox("retrieval_mode", ["mm", "text_only"])
 top_k = st.sidebar.slider("top_k (display)", 1, 30, 8)
 
 st.sidebar.header("Logging")
-st.sidebar.caption("Logging happens in the backend: logs/query_metrics.csv")
+st.sidebar.caption("Query metrics logged to artifacts/runs/ on the backend.")
 
 if agent_mode_on:
     # -------------------------------------------------------------
     # Agent Mode UI
     # -------------------------------------------------------------
-    st.subheader("Agent Mode (Experimental)")
+    st.subheader("PolicyPulse Agent — Legislative Analysis Chat")
     
     if st.sidebar.button("Clear chat"):
         st.session_state.agent_history = []
@@ -175,11 +179,11 @@ else:
     # -------------------------------------------------------------
     # Your Q1–Q5 selector (ids must match logs)
     MINI_GOLD = {
-        "Q1": "What is the overall SQLENS pipeline and what happens in each step?",
-        "Q2": "What semantic error types are shown in the causal graph and what signals are used to detect them?",
-        "Q3": "How does FACT reduce inconsistent hallucinations, and what kinds of hallucinations does it target?",
-        "Q4": "Using the figure of the SQLENS pipeline, list the pipeline stages in order.",
-        "Q5": "Who won the FIFA World Cup in 2050?",
+        "Q1": "Which bill addresses the regulation of autonomous vehicles on public highways?",
+        "Q2": "What is the current status and committee assignment of the Clean Energy Transition Act?",
+        "Q3": "Summarize the major provisions in the healthcare reform bill regarding prescription drug pricing.",
+        "Q4": "What were the last actions taken regarding the comprehensive tax reform legislation?",
+        "Q5": "Which bill establishes federal funding for time travel research and paradox prevention?",
     }
     
     query_id = st.sidebar.selectbox("query_id", list(MINI_GOLD.keys()))

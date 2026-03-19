@@ -1,0 +1,72 @@
+[
+  {
+    "id": "BQ1",
+    "instruction": "Summarize the following legislative bill.",
+    "input": "Bill Number: SB 1010\nTitle: Renewable Energy Grid Integration Act\nDescription: Mandates that electric utilities integrate at least 50% renewable energy into the grid by 2030. Provides $6 billion for grid-scale battery storage research, creates interconnection standards for distributed energy resources, and establishes a renewable energy credit trading system.\nStatus: Passed Committee\nCommittee: Committee on Energy and Natural Resources\nLast Action: Reported favorably with amendments",
+    "expected_output": "The Renewable Energy Grid Integration Act (SB 1010) requires utilities to reach 50% renewable energy by 2030. It funds $6 billion for battery storage research, sets interconnection standards for distributed resources, and creates a renewable credit trading system. The bill has passed committee with amendments.",
+    "category": "summarization"
+  },
+  {
+    "id": "BQ2",
+    "instruction": "What is the current status of this bill?",
+    "input": "Bill Number: HB 2020\nTitle: National Flood Insurance Reform Act\nDescription: Reforms the National Flood Insurance Program by updating flood risk mapping, introducing risk-based pricing, providing means-tested affordability assistance, and requiring disclosure of flood risk in real estate transactions.\nStatus: Conference Committee\nCommittee: Joint Conference Committee\nLast Action: Conferees appointed from both chambers",
+    "expected_output": "HB 2020 is in conference committee, where appointed members from both the House and Senate are working to reconcile differing versions passed by each chamber. This is an advanced legislative stage indicating strong bicameral support.",
+    "category": "status_inquiry"
+  },
+  {
+    "id": "BQ3",
+    "instruction": "Compare the following two bills and highlight their similarities and differences.",
+    "input": "Bill A - HB 3030: Federal Gun Safety Act. Requires universal background checks, establishes a national red flag law, and bans assault-style weapons. Status: Passed House.\n\nBill B - SB 4040: Second Amendment Preservation Act. Prohibits federal funding for gun buyback programs, creates concealed carry reciprocity across states, and increases penalties for straw purchases. Status: In Committee.",
+    "expected_output": "These bills represent opposing policy directions on firearms. HB 3030 focuses on restricting access through background checks, red flag laws, and weapon bans, while SB 4040 expands gun rights through concealed carry reciprocity and protects against buyback programs. Both address straw purchases (HB 3030 implicitly through background checks, SB 4040 through increased penalties). HB 3030 has advanced further legislatively.",
+    "category": "comparison"
+  },
+  {
+    "id": "BQ4",
+    "instruction": "Determine whether the provided context contains enough evidence to answer the question. If not, state that evidence is insufficient.",
+    "input": "Question: What percentage of GDP does this defense bill represent?\nContext: Bill Number: HB 5050\nTitle: National Defense Authorization Act\nDescription: Authorizes $886 billion for national defense including military pay raises, weapons modernization, and cybersecurity investments.\nStatus: Signed into Law\nCommittee: Committee on Armed Services",
+    "expected_output": "Not enough evidence in the retrieved context. The bill specifies the authorization amount ($886 billion) but does not reference GDP figures. Calculating the percentage of GDP would require current economic data not available in the legislative record.",
+    "category": "missing_evidence"
+  },
+  {
+    "id": "BQ5",
+    "instruction": "What are the key provisions of this bill?",
+    "input": "Bill Number: SB 6060\nTitle: Comprehensive Voting Rights Act\nDescription: Restores preclearance requirements for election law changes in jurisdictions with discrimination history, establishes national automatic voter registration, mandates 15 days of early voting for federal elections, prohibits partisan gerrymandering through independent redistricting commissions, and provides federal funding for election administration.\nStatus: Passed Senate\nCommittee: Committee on the Judiciary\nLast Action: Passed Senate 52-48, referred to House",
+    "expected_output": "Key provisions of SB 6060: (1) Restored preclearance requirements for jurisdictions with discrimination records, (2) National automatic voter registration, (3) Mandatory 15-day early voting period for federal elections, (4) Independent redistricting commissions to prevent gerrymandering, and (5) Federal funding for election administration.",
+    "category": "provision_extraction"
+  },
+  {
+    "id": "BQ6",
+    "instruction": "Explain the potential impact of this bill if enacted.",
+    "input": "Bill Number: HB 7070\nTitle: Student Debt Cancellation Act\nDescription: Cancels up to $50,000 in federal student loan debt per borrower, funded through a financial transactions tax of 0.1% on stock trades. Includes income eligibility caps at $125,000 individual / $250,000 household.\nStatus: Introduced\nCommittee: Committee on Education and the Workforce\nLast Action: Referred to committee",
+    "expected_output": "If enacted, HB 7070 would provide up to $50,000 in debt relief for borrowers under the income caps, significantly reducing the $1.7 trillion student debt burden. The 0.1% financial transactions tax would shift costs to Wall Street trading activity. Potential impacts include increased consumer spending, higher home ownership rates among younger adults, and possible market volume effects from the transaction tax.",
+    "category": "impact_analysis"
+  },
+  {
+    "id": "BQ7",
+    "instruction": "Analyze the legislative history and trajectory of this bill.",
+    "input": "Bill Number: SB 8080\nTitle: Critical Mineral Supply Chain Security Act\nDescription: Invests $7 billion in domestic critical mineral mining and processing, creates strategic mineral reserves, fast-tracks environmental permits for lithium and rare earth projects, and establishes trade agreements with allied nations for mineral supply chain diversification.\nStatus: Passed Senate\nCommittee: Committee on Energy and Natural Resources\nLast Action: Passed Senate 78-20 with bipartisan support, referred to House Natural Resources Committee",
+    "expected_output": "SB 8080 shows strong advancement potential with a 78-20 Senate vote indicating robust bipartisan support. The bill addresses national security and economic competitiveness concerns that unite both parties. Its referral to House Natural Resources Committee is the standard next step. The strong margin suggests it could pass the House as well, though environmental permit fast-tracking provisions may face opposition from environmental advocates in the House.",
+    "category": "trajectory_analysis"
+  },
+  {
+    "id": "BQ8",
+    "instruction": "Identify the committee responsible for this bill and explain its jurisdiction.",
+    "input": "Bill Number: HB 9090\nTitle: Federal Cannabis Decriminalization and Regulation Act\nDescription: Removes cannabis from the Controlled Substances Act schedule, establishes federal taxation and regulation framework, creates expungement pathways for prior cannabis convictions, and allows states to set their own legalization policies.\nStatus: In Committee\nCommittee: Committee on the Judiciary\nLast Action: Subcommittee hearing scheduled",
+    "expected_output": "The bill is assigned to the Committee on the Judiciary, which has jurisdiction over criminal law, drug policy, and controlled substances scheduling. Since the bill's primary action is removing cannabis from the Controlled Substances Act and creating expungement pathways, it falls squarely within Judiciary's purview over federal criminal law and scheduling decisions.",
+    "category": "committee_analysis"
+  },
+  {
+    "id": "BQ9",
+    "instruction": "Extract structured metadata from this bill description.",
+    "input": "Bill Number: SB 1515\nTitle: AI in Healthcare Safety and Innovation Act\nDescription: Establishes FDA oversight for AI-based diagnostic tools, requires clinical validation studies before deployment, creates a $2 billion AI health innovation fund, mandates algorithmic bias testing for medical AI, and establishes patient consent requirements for AI-assisted diagnoses.\nStatus: Passed Committee\nCommittee: Committee on Health, Education, Labor, and Pensions\nLast Action: Reported with amendments",
+    "expected_output": "Metadata extracted:\n- Bill ID: SB 1515\n- Title: AI in Healthcare Safety and Innovation Act\n- Topic: AI regulation, healthcare technology, patient safety\n- Funding: $2 billion\n- Key Programs: AI health innovation fund, algorithmic bias testing, clinical validation\n- Agencies: FDA\n- Policy Areas: Healthcare, technology regulation, consumer protection\n- Status: Passed Committee (reported with amendments)\n- Committee: HELP Committee\n- Legislative Stage: Awaiting floor vote",
+    "category": "metadata_extraction"
+  },
+  {
+    "id": "BQ10",
+    "instruction": "Identify potential stakeholders who would be most affected by this bill.",
+    "input": "Bill Number: HB 2525\nTitle: Commercial Drone Integration and Safety Act\nDescription: Creates a comprehensive regulatory framework for commercial drone operations beyond visual line of sight, establishes drone traffic management systems, requires remote identification for all drones over 250g, provides liability insurance requirements, and creates restricted airspace zones near critical infrastructure.\nStatus: Passed House\nCommittee: Committee on Transportation and Infrastructure\nLast Action: Passed House 340-85",
+    "expected_output": "Key stakeholders: (1) Commercial drone operators (delivery companies, agriculture, surveying) gaining beyond-line-of-sight permissions, (2) FAA as the implementing regulatory agency, (3) Aviation industry concerned about airspace safety, (4) Critical infrastructure operators benefiting from restricted zones, (5) Insurance companies developing new drone liability products, (6) Drone manufacturers needing to comply with remote ID requirements, (7) Privacy advocates concerned about expanded drone surveillance capabilities.",
+    "category": "stakeholder_analysis"
+  }
+]

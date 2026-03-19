@@ -10,3 +10,10 @@ pillow==12.1.1
 python-dotenv==1.2.2
 streamlit==1.55.0
 snowflake-connector-python==4.3.0
+# Fine-tuning & model adaptation (Lab 8)
+torch>=2.0.0
+transformers>=4.40.0
+peft>=0.11.0
+datasets>=2.19.0
+accelerate>=0.30.0
+sentencepiece>=0.2.0

@@ -1,4 +1,19 @@
+# Lab 8 — Fine-Tuning and Domain Adaptation
 
+PolicyPulse has been upgraded from a generic RAG chatbot to a **domain-specialized legislative AI assistant** using LoRA fine-tuning.
+
+### What's New in Lab 8
+- **Instruction Dataset** — 52-example legislative Q&A dataset (`data/instruction_dataset/`)
+- **LoRA Fine-Tuning** — Parameter-efficient adaptation of flan-t5-base (`training/train_lora.py`)
+- **Domain Model Client** — Switchable baseline vs. adapted inference (`llm/domain_model_client.py`)
+- **Evaluation Pipeline** — 10-question benchmark with ROUGE-L/BLEU metrics (`eval/run_eval.py`)
+- **Updated Agent** — Domain-specific system prompt for legislative analysis
+- **Updated UI** — PolicyPulse branding with legislative example queries
+- **Snowflake Scripts** — Schema creation and data loading (`scripts/`)
+
+See `LAB8_GROUP_REPORT.md` for the full group report.
+
+---
 
 # Lab 6 — Agent Integration
 
@@ -44,21 +59,45 @@ Captions for each image are defined in `rag/pipeline.py` → `caption_map` and a
 ```
 lab45542/
 ├── app/
-│   ├── main.py               # Streamlit frontend
-│   └── requirements.txt      # Frontend dependencies
+│   ├── main.py               # Streamlit frontend (PolicyPulse UI)
+│   └── requirements.txt
 ├── api/
 │   ├── server.py              # FastAPI backend (REST API)
-│   └── requirements.txt      # Backend dependencies
+│   └── requirements.txt
+├── agent/
+│   ├── runner.py              # Agent loop (Gemini + tools)
+│   ├── prompts.py             # Domain-specific system prompt
+│   ├── tool_registry.py       # Tool execution registry
+│   └── ...
 ├── rag/
-│   └── pipeline.py            # Core RAG pipeline, metrics, logging
+│   ├── pipeline.py            # Core RAG pipeline + Snowflake retrieval
+│   └── snowflake_retriever.py # Snowflake BILLS retriever
 ├── data/
+│   ├── instruction_dataset/   # Instruction tuning dataset (Lab 8)
+│   │   ├── dataset.jsonl      # 52 examples
+│   │   ├── train.jsonl        # 70% train split
+│   │   ├── val.jsonl          # 15% validation split
+│   │   └── test.jsonl         # 15% test split
 │   ├── pdfs/                  # PDF documents
 │   └── figures/               # Multimodal image assets
-├── artifacts/
-│   └── runs/                  # Automatic evaluation logs (per-run directories)
-│       └── <run_id>/query_metrics.csv
+├── training/
+│   ├── train_lora.py          # LoRA fine-tuning script (Lab 8)
+│   └── artifacts/             # Saved adapters + training logs
+├── llm/
+│   └── domain_model_client.py # Baseline vs adapted model switching (Lab 8)
+├── eval/
+│   ├── run_eval.py            # Evaluation pipeline (Lab 8)
+│   ├── benchmark_questions.json # 10 benchmark questions
+│   └── results/               # Evaluation output
+├── scripts/
+│   ├── create_snowflake_schema.sql  # Snowflake DDL
+│   └── load_to_snowflake.py   # CSV → Snowflake loader
+├── snowflake/
+│   └── demo.sql               # Snowflake demo queries
+├── artifacts/runs/            # Per-run query metric logs
 ├── render.yaml                # Render deployment blueprint
-├── .gitignore
+├── requirements.txt           # All dependencies (incl. fine-tuning)
+├── LAB8_GROUP_REPORT.md       # Lab 8 group report
 └── README.md
 ```
 

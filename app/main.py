@@ -20,6 +20,8 @@ if not BACKEND_URL:
     st.error("BACKEND_URL is not set. Add it to .env or Render environment variables.")
     st.stop()
 
+BACKEND_URL = BACKEND_URL.rstrip('/')
+
 if not BACKEND_API_KEY:
     st.error("BACKEND_API_KEY is not set. Add it to .env or Render environment variables.")
     st.stop()

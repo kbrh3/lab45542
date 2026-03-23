@@ -270,3 +270,27 @@ The `render.yaml` blueprint defines both services. To deploy:
 4. Deploy.
 
 Both services use Python with their respective `requirements.txt` files.
+
+---
+
+## Deployment Setup (Lab 9)
+
+**Recommended Architecture:** Streamlit Community Cloud (Frontend) + Render (Backend)
+
+**1. Backend Deployment (Render):**
+- Connect your GitHub repository to Render and deploy the `lab45542-backend-api` service using the existing blueprint.
+- Add your required `BACKEND_API_KEY` (and `GEMINI_API_KEY`, `USE_SNOWFLAKE`, `SNOWFLAKE_*` if using Agent mode) to the Render environment variables.
+- **Note:** Snowflake may use a programmatic access token instead of a standard password if preferred.
+- Copy your deployed backend URL.
+
+**2. Frontend Deployment (Streamlit Cloud):**
+- Create a new app on [Streamlit Cloud](https://share.streamlit.io) pointing to `app/main.py`.
+- In **Advanced Settings > Secrets**, configure your connections:
+  ```toml
+  BACKEND_URL = "https://your-backend-url.onrender.com"
+  BACKEND_API_KEY = "your-secret-key-here"
+  ```
+- Deploy the app.
+
+**3. Post-Deployment:**
+- Update the `allow_origins` list in `api/server.py` directly with your newly generated Streamlit URL to prevent CORS blocking.

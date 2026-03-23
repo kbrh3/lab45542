@@ -30,7 +30,7 @@ def check_backend():
     header = {
         "internal-api-key": BACKEND_API_KEY,
     }
-    url = f'{BACKEND_URL}/status'
+    url = f'{BACKEND_URL}/health'
     try:
         r = requests.get(url, timeout=2, headers=header)
         r.raise_for_status()

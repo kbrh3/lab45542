@@ -30,13 +30,23 @@ def check_backend():
     header = {
         "internal-api-key": BACKEND_API_KEY,
     }
+    url = f'{BACKEND_URL}/status'
     try:
-        r = requests.get(f'{BACKEND_URL}/status', timeout=2, headers=header)
+        r = requests.get(url, timeout=2, headers=header)
         r.raise_for_status()
-        return True
-    except:
-        return False
-api_awake = check_backend()
+        return True, None
+    except requests.exceptions.RequestException as e:
+        status_code = e.response.status_code if e.response is not None else None
+        response_text = e.response.text if e.response is not None else None
+        
+        err_msg = f"URL: {url}\n"
+        if status_code is not None:
+            err_msg += f"Status Code: {status_code}\nResponse: {response_text}\n"
+        err_msg += f"Exception: {str(e)}"
+        
+        return False, err_msg
+
+api_awake, backend_error_msg = check_backend()
 
 
 # Begin page content
@@ -44,6 +54,8 @@ st.set_page_config(page_title="CS5542 Lab 4 RAG App", layout="wide")
 st.title("CS 5542 — Lab 4 RAG App")
 if not api_awake:
     st.warning(f"Backend is offline (Render free tier limitations). Reboot it by following this link: {BACKEND_URL}")
+    st.error("Health check failed with the following details:")
+    st.code(backend_error_msg, language="text")
 
 # Agent Mode state
 if "agent_history" not in st.session_state:
@@ -205,7 +217,8 @@ else:
         }
     
         try:
-            r = requests.post(f"{BACKEND_URL}/query", json=payload, headers=header, timeout=60)
+            url = f"{BACKEND_URL}/query"
+            r = requests.post(url, json=payload, headers=header, timeout=60)
             r.raise_for_status()
             data = r.json()
     
@@ -231,8 +244,18 @@ else:
                 st.json(data.get("metrics", {}))
                 st.success("Logged to logs/query_metrics.csv (backend)")
     
-        except Exception as e:
+        except requests.exceptions.RequestException as e:
             st.error(f"API call failed")
+            status_code = e.response.status_code if e.response is not None else None
+            response_text = e.response.text if e.response is not None else None
+            
+            err_msg = f"URL: {url}\nPayload: {json.dumps(payload, indent=2)}\n"
+            if status_code is not None:
+                err_msg += f"Status Code: {status_code}\nResponse: {response_text}\n"
+            err_msg += f"Exception: {str(e)}"
+            
+            st.code(err_msg, language="text")
+            st.exception(e)
             print(e)
 
 

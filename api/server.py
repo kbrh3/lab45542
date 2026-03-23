@@ -27,7 +27,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:8501",
-        "https://your-app-name.streamlit.app"
+        "https://policypulse5542.streamlit.app"
     ],
     allow_credentials=True,
     allow_methods=["*"],

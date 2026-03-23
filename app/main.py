@@ -38,8 +38,8 @@ api_awake = check_backend()
 
 
 # Begin page content
-st.set_page_config(page_title="CS5542 Lab 4 RAG App", layout="wide")
-st.title("CS 5542 — Lab 4 RAG App")
+st.set_page_config(page_title="PolicyPulse", layout="wide")
+st.title("PolicyPulse--AI-Powered Policy Analysis")
 if not api_awake:
     st.warning(f"Backend is offline (Render free tier limitations). Reboot it by following this link: {BACKEND_URL}")
 
@@ -52,8 +52,8 @@ st.sidebar.header("Mode Selection")
 agent_mode_on = st.sidebar.toggle("Agent Mode", value=False)
 
 st.sidebar.header("Retrieval Settings")
-retrieval_mode = st.sidebar.selectbox("retrieval_mode", ["mm", "text_only"])
-top_k = st.sidebar.slider("top_k (display)", 1, 30, 8)
+retrieval_mode = st.sidebar.selectbox("Retrieval Mode", ["Multi-modal", "Text only"])
+top_k = st.sidebar.slider("Results to retrieve (k)", 1, 30, 8)
 
 st.sidebar.header("Logging")
 st.sidebar.caption("Logging happens in the backend: logs/query_metrics.csv")
@@ -182,7 +182,7 @@ else:
         "Q5": "Who won the FIFA World Cup in 2050?",
     }
     
-    query_id = st.sidebar.selectbox("query_id", list(MINI_GOLD.keys()))
+    query_id = st.sidebar.selectbox("Sample Questions", list(MINI_GOLD.keys()))
     use_gold = st.sidebar.checkbox("Use gold question text", value=True)
     
     question = st.text_area("Question", value=(MINI_GOLD[query_id] if use_gold else ""), height=120)

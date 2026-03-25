@@ -81,13 +81,7 @@ mini_gold = [
 # Captions (Legacy Lab 3 paper mappings)
 # -----------------------------
 caption_map = {
-    "Screenshot 2026-02-12 085908.png": "SQLENS pipeline: Error Detector -> Error Selector -> Error Fixer -> SQL Auditor",
-    "Screenshot 2026-02-12 085920.png": "Causal graph: semantic errors and DB/LLM signals (ambiguity, evidence violation, join predicate, join tree)",
-    "Screenshot 2026-02-12 085933.png": "Signal aggregation via weak supervision: labeling functions -> generative model -> correctness prediction",
-    "Screenshot 2026-02-12 090033.png": "ALIGNRAG overview: retrieval + critique synthesis + critique-driven alignment",
-    "Screenshot 2026-02-12 090118.png": "FACT example: input/context conflicting hallucinations and correction",
-    "Screenshot 2026-02-12 090126.png": "FACT overview: filtering fact text + alternating code-text training + quality assessment",
-    "Screenshot 2026-02-12 090137.png": "FACT simplified example: text segment paired with code representation",
+    # Legacy captions bypassed and removed to enforce Policy domain
 }
 
 

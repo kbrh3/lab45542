@@ -50,8 +50,8 @@ api_awake, backend_error_msg = check_backend()
 
 
 # Begin page content
-st.set_page_config(page_title="CS5542 Lab 4 RAG App", layout="wide")
-st.title("CS 5542 — Lab 4 RAG App")
+st.set_page_config(page_title="PolicyPulse", layout="wide")
+st.title("PolicyPulse")
 if not api_awake:
     st.warning(f"Backend is offline (Render free tier limitations). Reboot it by following this link: {BACKEND_URL}")
     st.error("Health check failed with the following details:")
@@ -189,10 +189,10 @@ else:
     # -------------------------------------------------------------
     # Your Q1–Q5 selector (ids must match logs)
     MINI_GOLD = {
-        "Q1": "What is the overall SQLENS pipeline and what happens in each step?",
-        "Q2": "What semantic error types are shown in the causal graph and what signals are used to detect them?",
-        "Q3": "How does FACT reduce inconsistent hallucinations, and what kinds of hallucinations does it target?",
-        "Q4": "Using the figure of the SQLENS pipeline, list the pipeline stages in order.",
+        "Q1": "What bills are related to education?",
+        "Q2": "What is the latest action on healthcare-related bills?",
+        "Q3": "Which bills are currently in committee?",
+        "Q4": "Summarize recent legislation related to public safety",
         "Q5": "Who won the FIFA World Cup in 2050?",
     }
     

@@ -67,6 +67,11 @@ def query(q: QueryIn) -> Dict[str, Any]:
     # Return everything Streamlit needs
     return {
         "pipeline_version": "snowflake_only_v2",
+        "retriever_source": "snowflake_retriever_v2",
+        "retriever_database": os.getenv("SNOWFLAKE_DATABASE", "UNKNOWN"),
+        "retriever_schema": os.getenv("SNOWFLAKE_SCHEMA", "UNKNOWN"),
+        "retriever_table": "BILLS",
+        "dynamic_sql_from_bills": True,
         "answer": out["answer"],
         "evidence": out["ctx"]["evidence"],
         "metrics": {

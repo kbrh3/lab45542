@@ -4,12 +4,15 @@ import json
 import os
 from dotenv import load_dotenv
 
+# Run configuration setup before any other Streamlit calls
+st.set_page_config(page_title="PolicyPulse", layout="wide")
+
 # Local dev environment loading
 try:
     BASEDIR = os.path.abspath(os.path.dirname(__file__))
     dotenv_path = os.path.join(BASEDIR, '../.env') 
     load_dotenv(dotenv_path)
-except:
+except Exception:
     pass
 
 # Secrets
@@ -17,13 +20,13 @@ BACKEND_URL = os.getenv("BACKEND_URL")
 BACKEND_API_KEY = os.getenv("BACKEND_API_KEY")
 
 if not BACKEND_URL:
-    st.error("BACKEND_URL is not set. Add it to .env or Render environment variables.")
+    st.error("The backend URL configuration is missing. Please ensure BACKEND_URL is defined in your environment variables.")
     st.stop()
 
 BACKEND_URL = BACKEND_URL.rstrip('/')
 
 if not BACKEND_API_KEY:
-    st.error("BACKEND_API_KEY is not set. Add it to .env or Render environment variables.")
+    st.error("The backend API key configuration is missing. Please ensure BACKEND_API_KEY is defined in your environment variables.")
     st.stop()
 
 def check_backend():
@@ -39,46 +42,93 @@ def check_backend():
         status_code = e.response.status_code if e.response is not None else None
         response_text = e.response.text if e.response is not None else None
         
-        err_msg = f"URL: {url}\n"
+        err_msg = f"Connection Attempt to URL: {url}\n"
         if status_code is not None:
-            err_msg += f"Status Code: {status_code}\nResponse: {response_text}\n"
-        err_msg += f"Exception: {str(e)}"
+            err_msg += f"Status Code: {status_code}\nServer Response: {response_text}\n"
+        err_msg += f"Exception Details: {str(e)}"
         
         return False, err_msg
 
 api_awake, backend_error_msg = check_backend()
 
-
 # Begin page content
-st.set_page_config(page_title="PolicyPulse", layout="wide")
 st.title("PolicyPulse")
+
+st.markdown("PolicyPulse helps users ask questions about legislation using retrieval and agent-based reasoning. The system supports both a direct retrieval workflow and a multi-step agent workflow, with backend integration for policy data and Snowflake-supported querying.")
+
+with st.expander("About Modes", expanded=False):
+    st.info("""
+    * **Classic Mode**: Returns answers directly from the retrieval pipeline based on the provided context.
+    * **Agent Mode**: Supports multi-step reasoning and tool use for more complex questions, leveraging an interactive chat wrapper.
+    """)
+
 if not api_awake:
-    st.warning(f"Backend is offline (Render free tier limitations). Reboot it by following this link: {BACKEND_URL}")
-    st.error("Health check failed with the following details:")
-    st.code(backend_error_msg, language="text")
+    st.warning(f"Note: The backend service is currently offline. This may occur due to free tier hosting limitations on Render. Please click [here]({BACKEND_URL}) to wake the service.")
+    st.error("Backend health check failed. The system is temporarily unavailable.")
+    with st.expander("Technical Details"):
+        st.code(backend_error_msg, language="text")
 
 # Agent Mode state
 if "agent_history" not in st.session_state:
     st.session_state.agent_history = []
 
 # Sidebar
+st.sidebar.header("System Status")
+if api_awake:
+    st.sidebar.success("Backend: Online")
+else:
+    st.sidebar.error("Backend: Offline")
+
+show_debug = st.sidebar.checkbox("Show Debug Details", value=False)
+st.sidebar.divider()
+
 st.sidebar.header("Mode Selection")
-agent_mode_on = st.sidebar.toggle("Agent Mode", value=False)
+agent_mode_on = st.sidebar.toggle("Enable Agent Mode", value=False)
 
 st.sidebar.header("Retrieval Settings")
-retrieval_mode = st.sidebar.selectbox("retrieval_mode", ["mm", "text_only"])
-top_k = st.sidebar.slider("top_k (display)", 1, 30, 8)
+retrieval_mode = st.sidebar.selectbox(
+    "Retrieval Mode", 
+    options=["mm", "text_only"],
+    help="Select 'mm' for multimodal retrieval or 'text_only' for standard text retrieval."
+)
+top_k = st.sidebar.slider(
+    "Number of Evidence Items", 
+    min_value=1, 
+    max_value=30, 
+    value=8,
+    help="Adjust the number of retrieved evidence chunks to display and process."
+)
 
-st.sidebar.header("Logging")
-st.sidebar.caption("Logging happens in the backend: logs/query_metrics.csv")
+st.sidebar.header("Evaluation Settings")
+st.sidebar.caption("System evaluation logs are automatically saved to the backend metrics database.")
+
+def render_evidence(evidence_list, display_limit):
+    for i, ev in enumerate(evidence_list[:display_limit]):
+        with st.container(border=True):
+            st.markdown(f"**{ev.get('citation_tag','Source')}** | *{ev.get('modality','Unknown Modality').title()}* | Relevance Score: **{ev.get('fused_score',0):.3f}**")
+            st.caption(f"ID: {ev.get('id', 'N/A')}")
+            
+            text_content = ev.get("text") or ""
+            if len(text_content) > 500:
+                st.write(text_content[:500] + "...")
+            else:
+                st.write(text_content)
+            
+            path = ev.get("path")
+            if ev.get("modality") == "image" and path:
+                if path.startswith("http") or os.path.exists(path):
+                    st.image(path, caption=ev.get("id",""), use_container_width=True)
+                else:
+                    st.caption("Image asset available on backend.")
 
 if agent_mode_on:
     # -------------------------------------------------------------
     # Agent Mode UI
     # -------------------------------------------------------------
-    st.subheader("Agent Mode (Experimental)")
+    st.subheader("Agent Mode")
+    st.caption("Intended for more complex multi-step reasoning questions.")
     
-    if st.sidebar.button("Clear chat"):
+    if st.sidebar.button("Clear conversation history"):
         st.session_state.agent_history = []
         st.rerun()
 
@@ -88,39 +138,29 @@ if agent_mode_on:
             st.markdown(msg["content"])
             # If the msg has additional payload components like evidence, render them
             if msg.get("evidence"):
-                with st.expander(f"View {len(msg['evidence'])} Evidence Items"):
-                    for ev in msg["evidence"][:top_k]:
-                        st.markdown(f"**{ev.get('citation_tag','')}** — *{ev.get('modality','')}* — score={ev.get('fused_score',0):.3f}")
-                        st.write((ev.get("text") or "")[:500])
-                        
-                        path = ev.get("path")
-                        if ev.get("modality") == "image" and path:
-                            if path.startswith("http") or os.path.exists(path):
-                                st.image(path, caption=ev.get("id",""), use_container_width=True)
-                            else:
-                                st.caption("Image path available only in local runtime.")
-                        st.divider()
+                with st.expander(f"Supporting Evidence ({len(msg['evidence'])} Items Retrieved)"):
+                    render_evidence(msg["evidence"], top_k)
             
             if msg.get("metrics"):
                 with st.expander("Metrics"):
                     st.json(msg["metrics"])
                     
             if msg.get("tool_trace"):
-                with st.expander("Tool Trace"):
+                with st.expander("Agent Tool Trace"):
                     st.json(msg["tool_trace"])
                     
             if msg.get("errors"):
-                with st.expander("Errors", expanded=True):
+                with st.expander("System Errors", expanded=True):
                     for err in msg["errors"]:
                         st.error(err)
 
     # Chat Input
-    if user_input := st.chat_input("Ask the agent something..."):
+    if user_input := st.chat_input("Enter your policy question..."):
         st.session_state.agent_history.append({"role": "user", "content": user_input})
         with st.chat_message("user"):
             st.markdown(user_input)
             
-        with st.spinner("Agent thinking..."):
+        with st.spinner("Processing request via agent reasoning..."):
             header = {"internal-api-key": BACKEND_API_KEY}
             
             # Send the history strictly excluding special extra UI keys to the backend
@@ -136,7 +176,21 @@ if agent_mode_on:
             }
             
             try:
-                r = requests.post(f"{BACKEND_URL}/agent_query", json=payload, headers=header, timeout=120)
+                url_agent = f"{BACKEND_URL}/agent_query"
+                r = requests.post(url_agent, json=payload, headers=header, timeout=120)
+                
+                if show_debug:
+                    with st.expander("Debug: Agent API Details", expanded=False):
+                        st.write("**Endpoint:**", url_agent)
+                        st.write("**Status Code:**", r.status_code)
+                        st.write("**Payload:**")
+                        st.json(payload)
+                        st.write("**Response:**")
+                        try:
+                            st.json(r.json())
+                        except Exception:
+                            st.text(r.text)
+
                 if r.status_code == 200:
                     data = r.json()
                     answer = data.get("answer", "")
@@ -156,37 +210,41 @@ if agent_mode_on:
                     with st.chat_message("assistant"):
                         st.markdown(answer)
                         if assistant_msg["evidence"]:
-                            with st.expander(f"View {len(assistant_msg['evidence'])} Evidence Items"):
-                                for ev in assistant_msg["evidence"][:top_k]:
-                                    st.markdown(f"**{ev.get('citation_tag','')}** — *{ev.get('modality','')}* — score={ev.get('fused_score',0):.3f}")
-                                    st.write((ev.get("text") or "")[:500])
-                                    path = ev.get("path")
-                                    if ev.get("modality") == "image" and path:
-                                        if path.startswith("http") or os.path.exists(path):
-                                            st.image(path, caption=ev.get("id",""), use_container_width=True)
-                                        else:
-                                            st.caption("Image path available only in local runtime.")
-                                    st.divider()
+                            with st.expander(f"Supporting Evidence ({len(assistant_msg['evidence'])} Items Retrieved)"):
+                                render_evidence(assistant_msg["evidence"], top_k)
                         if assistant_msg["metrics"]:
                             with st.expander("Metrics"):
                                 st.json(assistant_msg["metrics"])
                         if assistant_msg["tool_trace"]:
-                            with st.expander("Tool Trace"):
+                            with st.expander("Agent Tool Trace"):
                                 st.json(assistant_msg["tool_trace"])
                         if assistant_msg["errors"]:
-                            with st.expander("Errors", expanded=True):
+                            with st.expander("System Errors", expanded=True):
                                 for err in assistant_msg["errors"]:
                                     st.error(err)
                                     
                 else:
-                    st.error(f"Backend returned error {r.status_code}")
+                    st.error("The system encountered an error fulfilling your request. Please try again or check the technical details.")
+                    if show_debug:
+                        with st.expander("Technical Details", expanded=True):
+                            st.write(f"Status Code: {r.status_code}")
+                            st.code(r.text, language="text")
             except Exception as e:
-                st.error(f"Failed to connect to agent backend: {e}")
+                st.error("Unable to reach the backend system. Please ensure the backend is online.")
+                if show_debug:
+                    with st.expander("Technical Details", expanded=True):
+                        st.write("Connection failed:")
+                        st.exception(e)
 
 else:
     # -------------------------------------------------------------
     # Classic RAG UI
     # -------------------------------------------------------------
+    st.subheader("Classic Retrieval Workflow")
+    st.caption("Intended for direct retrieval-based questions.")
+    
+    st.write("Please enter a policy question below, or select a pre-defined evaluation question from the sidebar.")
+    
     # Your Q1–Q5 selector (ids must match logs)
     MINI_GOLD = {
         "Q1": "What bills are related to education?",
@@ -196,12 +254,21 @@ else:
         "Q5": "Who won the FIFA World Cup in 2050?",
     }
     
-    query_id = st.sidebar.selectbox("query_id", list(MINI_GOLD.keys()))
-    use_gold = st.sidebar.checkbox("Use gold question text", value=True)
+    query_id = st.sidebar.selectbox(
+        "Question ID", 
+        options=list(MINI_GOLD.keys()),
+        help="Select a benchmark evaluation query to pre-fill the question area."
+    )
+    
+    use_gold = st.sidebar.checkbox(
+        "Use Gold Question Text", 
+        value=True,
+        help="Automatically populate the query input with the selected benchmark question."
+    )
     
     question = st.text_area("Question", value=(MINI_GOLD[query_id] if use_gold else ""), height=120)
     
-    run = st.button("Run")
+    run = st.button("Run Query")
     
     colA, colB = st.columns([2, 1])
     
@@ -219,6 +286,19 @@ else:
         try:
             url = f"{BACKEND_URL}/query"
             r = requests.post(url, json=payload, headers=header, timeout=60)
+            
+            if show_debug:
+                with st.expander("Debug: API Details", expanded=False):
+                    st.write("**Endpoint:**", url)
+                    st.write("**Status Code:**", r.status_code)
+                    st.write("**Payload:**")
+                    st.json(payload)
+                    st.write("**Response:**")
+                    try:
+                        st.json(r.json())
+                    except Exception:
+                        st.text(r.text)
+            
             r.raise_for_status()
             data = r.json()
     
@@ -226,36 +306,45 @@ else:
                 st.subheader("Answer")
                 st.write(data.get("answer", ""))
     
-                st.subheader("Evidence (Top-K)")
-                evidence = data.get("evidence", [])[:top_k]
-                for ev in evidence:
-                    st.markdown(f"**{ev.get('citation_tag','')}** — *{ev.get('modality','')}* — score={ev.get('fused_score',0):.3f}")
-                    st.write((ev.get("text") or "")[:500])
-                    path = ev.get("path")
-                    if ev.get("modality") == "image" and path:
-                        if path.startswith("http") or os.path.exists(path):
-                            st.image(path, caption=ev.get("id",""), use_container_width=True)
+                st.subheader(f"Supporting Evidence (Top {top_k})")
+                evidence = data.get("evidence", [])
+                for ev in evidence[:top_k]:
+                    with st.container(border=True):
+                        st.markdown(f"**{ev.get('citation_tag','Source')}** | *{ev.get('modality','Unknown Modality').title()}* | Relevance Score: **{ev.get('fused_score',0):.3f}**")
+                        st.caption(f"ID: {ev.get('id', 'N/A')}")
+                        text_content = ev.get("text") or ""
+                        if len(text_content) > 500:
+                            st.write(text_content[:500] + "...")
                         else:
-                            st.caption("Image path available only in local runtime.")
-                    st.divider()
+                            st.write(text_content)
+                        
+                        path = ev.get("path")
+                        if ev.get("modality") == "image" and path:
+                            if path.startswith("http") or os.path.exists(path):
+                                st.image(path, caption=ev.get("id",""), use_container_width=True)
+                            else:
+                                st.caption("Image asset available on backend.")
     
             with colB:
                 st.subheader("Metrics")
                 st.json(data.get("metrics", {}))
-                st.success("Logged to logs/query_metrics.csv (backend)")
+                st.success("Evaluation parameters successfully integrated into metrics logs.")
     
         except requests.exceptions.RequestException as e:
-            st.error(f"API call failed")
-            status_code = e.response.status_code if e.response is not None else None
-            response_text = e.response.text if e.response is not None else None
+            st.error("A system error occurred while retrieving policy data. Please try again.")
             
-            err_msg = f"URL: {url}\nPayload: {json.dumps(payload, indent=2)}\n"
-            if status_code is not None:
-                err_msg += f"Status Code: {status_code}\nResponse: {response_text}\n"
-            err_msg += f"Exception: {str(e)}"
-            
-            st.code(err_msg, language="text")
-            st.exception(e)
+            if show_debug:
+                with st.expander("Technical Details", expanded=True):
+                    status_code = e.response.status_code if e.response is not None else None
+                    response_text = e.response.text if e.response is not None else None
+                    
+                    err_msg = f"Target Endpoint: {url}\nPayload Data: {json.dumps(payload, indent=2)}\n"
+                    if status_code is not None:
+                        err_msg += f"Status Code: {status_code}\nServer Response: {response_text}\n"
+                    err_msg += f"Exception Details: {str(e)}"
+                    
+                    st.code(err_msg, language="text")
+                    st.exception(e)
+            else:
+                st.info("Enable 'Show Debug Details' in the sidebar for technical information.")
             print(e)
-
-

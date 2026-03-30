@@ -19,7 +19,7 @@ def generate_answer(question: str, ctx: Dict[str, Any]) -> str:
         return MISSING_EVIDENCE_MSG
 
     best = max((ev.get("fused_score", 0.0) for ev in ctx["evidence"]), default=0.0)
-    if best < 0.05:
+    if best < 0.15:
         return MISSING_EVIDENCE_MSG
 
     # Extractive baseline (grounded by construction)

@@ -54,30 +54,11 @@ def init_pipeline(
     if _STATE["initialized"] and _STATE["data_dir"] == data_dir and _STATE["logs_dir"] == logs_dir:
         return _STATE
 
-    # Load PDFs
-    pdfs = sorted(glob.glob(os.path.join(pdf_dir, "*.pdf")))
-
-    # Extract pages
+    # Bypassed local PDF loading as Snowflake is the primary source
+    pdfs = []
     page_chunks = []
-    for p in pdfs:
-        page_chunks.extend(extract_pdf_pages(p))
-
-    # Load images
-    image_items = load_images(fig_dir)
-
-    # Apply caption_map
-    if caption_map:
-        for it in image_items:
-            if it.item_id in caption_map:
-                it.caption = caption_map[it.item_id]
-
-    # Build indexes
-    text_vec, text_X = build_tfidf_index_text(page_chunks)
-    img_vec, img_X = build_tfidf_index_images(image_items)
-
-    # Improvement: Graceful file handling log instead of a hard crash loop. 
-    if not page_chunks and not image_items:
-        print("Warning: No data found. RAG pipeline initialized empty. Please put PDFs in data/pdfs/ and images in data/figures/.")
+    image_items = []
+    text_vec, text_X, img_vec, img_X = None, None, None, None
 
     _STATE.update({
         "initialized": True,

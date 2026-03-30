@@ -114,6 +114,8 @@ def retrieve(query: str, top_k: int = 5) -> List[Dict[str, Any]]:
             ).strip()
             
             # Format to pipeline context requirement
+            db_name = os.getenv("SNOWFLAKE_DATABASE", "UNKNOWN")
+            schema_name = os.getenv("SNOWFLAKE_SCHEMA", "UNKNOWN")
             result_item = {
                 "modality": "text",
                 "id": f"bill::{bill_id}",
@@ -122,7 +124,7 @@ def retrieve(query: str, top_k: int = 5) -> List[Dict[str, Any]]:
                 "text": retrieval_text,
                 "path": None,
                 "citation_tag": f"[bill::{bill_id}]",
-                "source": "BILLS",
+                "source": f"{db_name}.{schema_name}.BILLS",
                 "page_num": None
             }
             results.append(result_item)

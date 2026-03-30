@@ -106,71 +106,7 @@ class ImageItem:
 # -----------------------------
 # Helpers (Legacy PDF extraction and TF-IDF)
 # -----------------------------
-def clean_text(s: str) -> str:
-    s = s or ""
-    return re.sub(r"\s+", " ", s).strip()
-
-
-def extract_pdf_pages(pdf_path: str) -> List[TextChunk]:
-    doc_id = os.path.basename(pdf_path)
-    doc = fitz.open(pdf_path)
-    out: List[TextChunk] = []
-    for i in range(len(doc)):
-        page = doc.load_page(i)
-        text = clean_text(page.get_text("text"))
-        if text:
-            out.append(TextChunk(
-                chunk_id=f"{doc_id}::p{i+1}",
-                doc_id=doc_id,
-                page_num=i+1,
-                text=text
-            ))
-    return out
-
-
-def load_images(fig_dir: str) -> List[ImageItem]:
-    items: List[ImageItem] = []
-    for p in sorted(glob.glob(os.path.join(fig_dir, "*.*"))):
-        if not p.lower().endswith((".png", ".jpg", ".jpeg", ".webp")):
-            continue
-        base = os.path.basename(p)
-        caption = os.path.splitext(base)[0].replace("_", " ")
-        items.append(ImageItem(item_id=base, path=p, caption=caption))
-    return items
-
-
-def build_tfidf_index_text(chunks: List[TextChunk]):
-    corpus = [c.text for c in chunks]
-    vec = TfidfVectorizer(lowercase=True, stop_words="english")
-    X = vec.fit_transform(corpus)
-    X = normalize(X)
-    return vec, X
-
-
-def build_tfidf_index_images(items: List[ImageItem]):
-    corpus = [it.caption for it in items]
-    vec = TfidfVectorizer(lowercase=True, stop_words="english")
-    X = vec.fit_transform(corpus)
-    X = normalize(X)
-    return vec, X
-
-
-def tfidf_retrieve(query: str, vec: TfidfVectorizer, X, top_k: int = 5):
-    q = vec.transform([query])
-    q = normalize(q)
-    scores = (X @ q.T).toarray().ravel()
-    idx = np.argsort(-scores)[:top_k]
-    return [(int(i), float(scores[i])) for i in idx]
-
-
-def _normalize_scores(pairs):
-    if not pairs:
-        return []
-    scores = [s for _, s in pairs]
-    lo, hi = min(scores), max(scores)
-    if abs(hi - lo) < 1e-12:
-        return [(i, 1.0) for i, _ in pairs]
-    return [(i, (s - lo) / (hi - lo)) for i, s in pairs]
+# (Removed local PDF and TF-IDF logic, exclusively relying on Snowflake)
 
 
 # -----------------------------
@@ -178,19 +114,9 @@ def _normalize_scores(pairs):
 # -----------------------------
 _STATE: Dict[str, Any] = {
     "initialized": False,
-    "data_dir": None,
-    "pdf_dir": None,
-    "fig_dir": None,
     "logs_dir": None,
     "base_logs_dir": None,
     "log_file": None,
-    "pdfs": [],
-    "page_chunks": [],
-    "image_items": [],
-    "text_vec": None,
-    "text_X": None,
-    "img_vec": None,
-    "img_X": None,
 }
 
 
@@ -206,11 +132,10 @@ def init_pipeline(
     """
     global _STATE
 
-    data_dir = str(data_dir)
     logs_dir = str(logs_dir)
 
     # If already initialized for same dirs, do nothing
-    if _STATE["initialized"] and _STATE["data_dir"] == data_dir and _STATE.get("base_logs_dir") == logs_dir:
+    if _STATE["initialized"] and _STATE.get("base_logs_dir") == logs_dir:
         return _STATE
 
     if use_run_id:
@@ -220,32 +145,15 @@ def init_pipeline(
         actual_logs_dir = logs_dir
 
     log_path = os.path.join(actual_logs_dir, log_file)
-
-    pdf_dir = os.path.join(data_dir, "pdfs")
-    fig_dir = os.path.join(data_dir, "figures")
     os.makedirs(actual_logs_dir, exist_ok=True)
 
-    print("Initializing Snowflake retrieval mode. Local PDF indexing logic bypassed.")
-    pdfs = []
-    page_chunks = []
-    image_items = []
-    text_vec, text_X, img_vec, img_X = None, None, None, None
+    print("Initializing Snowflake retrieval mode. Local PDF logic explicitly disabled and removed.")
 
     _STATE.update({
         "initialized": True,
-        "data_dir": data_dir,
-        "pdf_dir": pdf_dir,
-        "fig_dir": fig_dir,
         "logs_dir": actual_logs_dir,
         "base_logs_dir": logs_dir,
         "log_file": log_path,
-        "pdfs": pdfs,
-        "page_chunks": page_chunks,
-        "image_items": image_items,
-        "text_vec": text_vec,
-        "text_X": text_X,
-        "img_vec": img_vec,
-        "img_X": img_X,
     })
 
     ensure_logfile(_STATE["log_file"])
@@ -302,7 +210,7 @@ def generate_answer(question: str, ctx: Dict[str, Any]) -> str:
         return MISSING_EVIDENCE_MSG
 
     best = max(ev.get("fused_score", 0.0) for ev in ctx["evidence"])
-    if best < 0.05:
+    if best < 0.15:
         return MISSING_EVIDENCE_MSG
 
     # Extractive baseline (grounded by construction)
@@ -511,35 +419,7 @@ def run_query_and_log(
 # -----------------------------
 # Optional debug helpers
 # -----------------------------
-def list_pdf_pages() -> List[str]:
-    """
-    Returns chunk IDs like: MyPaper.pdf::p1, MyPaper.pdf::p2 ...
-    Useful to fill gold_evidence_ids correctly.
-    """
-    if not _STATE["initialized"]:
-        init_pipeline()
-
-    out = []
-    for p in _STATE["pdfs"]:
-        doc = fitz.open(p)
-        doc_id = os.path.basename(p)
-        for i in range(len(doc)):
-            out.append(f"{doc_id}::p{i+1}")
-    return out
-
-
-def find_pages_containing(term: str, limit: int = 30) -> List[str]:
-    if not _STATE["initialized"]:
-        init_pipeline()
-
-    term = (term or "").lower()
-    hits = []
-    for ch in _STATE["page_chunks"]:
-        if term in ch.text.lower():
-            hits.append(ch.chunk_id)
-            if len(hits) >= limit:
-                break
-    return hits
+# Removed stale local PDF debugging helpers.
 
 
 def get_mini_gold() -> List[Dict[str, Any]]:

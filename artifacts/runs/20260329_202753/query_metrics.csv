@@ -1,0 +1,2 @@
+timestamp,query_id,retrieval_mode,top_k_evidence,latency_ms,Precision@5,Recall@10,evidence_ids_returned,gold_evidence_ids,faithfulness_pass,missing_evidence_behavior
+2026-03-30T01:28:10.906881+00:00,test_1,mm,8,17565.3,nan,nan,[],[],Yes,Pass

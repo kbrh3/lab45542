@@ -78,7 +78,7 @@ def retrieve(query: str, top_k: int = 5) -> List[Dict[str, Any]]:
                 STATUS_DESC,
                 COMMITTEE,
                 LAST_ACTION
-            FROM POLICYPULSE_DB.PUBLIC.BILLS
+            FROM BILLS
             WHERE 
                 BILL_NUMBER ILIKE %s OR 
                 TITLE ILIKE %s OR 

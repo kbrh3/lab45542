@@ -66,6 +66,7 @@ def query(q: QueryIn) -> Dict[str, Any]:
 
     # Return everything Streamlit needs
     return {
+        "pipeline_version": "snowflake_only_v2",
         "answer": out["answer"],
         "evidence": out["ctx"]["evidence"],
         "metrics": {

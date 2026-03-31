@@ -15,26 +15,26 @@ ALPHA          = 0.5  # 0.0=images dominate, 1.0=text dominates
 RANDOM_SEED = 0
 np.random.seed(RANDOM_SEED)
 
-# Mini gold set
+# Mini gold set — PolicyPulse legislative evaluation queries
 mini_gold = [
     {
         "query_id": "Q1",
-        "question": "What is the overall SQLENS pipeline and what happens in each step?",
+        "question": "What bills are related to education?",
         "gold_evidence_ids": []
     },
     {
         "query_id": "Q2",
-        "question": "What semantic error types are shown in the causal graph and what signals are used to detect them?",
+        "question": "What is the latest action on healthcare-related bills?",
         "gold_evidence_ids": []
     },
     {
         "query_id": "Q3",
-        "question": "How does FACT reduce inconsistent hallucinations, and what kinds of hallucinations does it target?",
+        "question": "Which bills are currently in committee?",
         "gold_evidence_ids": []
     },
     {
         "query_id": "Q4",
-        "question": "Using the figure of the SQLENS pipeline, list the pipeline stages in order.",
+        "question": "Summarize recent legislation related to public safety",
         "gold_evidence_ids": []
     },
     {

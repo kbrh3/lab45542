@@ -15,9 +15,19 @@ try:
 except Exception:
     pass
 
+def get_secret(key: str) -> str | None:
+    """Retrieve a secret — checks st.secrets first (Streamlit Cloud), then env vars (local dev)."""
+    try:
+        val = st.secrets.get(key)
+        if val:
+            return val
+    except Exception:
+        pass
+    return os.getenv(key)
+
 # Secrets
-BACKEND_URL = os.getenv("BACKEND_URL")
-BACKEND_API_KEY = os.getenv("BACKEND_API_KEY")
+BACKEND_URL = get_secret("BACKEND_URL")
+BACKEND_API_KEY = get_secret("BACKEND_API_KEY")
 
 if not BACKEND_URL:
     st.error("The backend URL configuration is missing. Please ensure BACKEND_URL is defined in your environment variables.")

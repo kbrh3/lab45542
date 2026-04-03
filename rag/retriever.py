@@ -50,8 +50,12 @@ def build_context(
 
     from rag.snowflake_retriever import retrieve
     
+    print(f"--- DEBUG: rag/retriever.py -> build_context() calling snowflake_retriever.retrieve().")
+
     # Bypass original local memory indexes and fetch directly via Snowflake SQL matching
     fused = retrieve(question, top_k=top_k_evidence)
+    
+    print(f"--- DEBUG: rag/retriever.py -> build_context() retrieved {len(fused)} items.")
 
     ctx_lines = []
     image_paths = []

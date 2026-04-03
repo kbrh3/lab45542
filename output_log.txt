@@ -1,0 +1,14 @@
+C:\Users\kaily\lab45542\test_verify_api.py:18: PydanticDeprecatedSince20: The `dict` method is deprecated; use `model_dump` instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+  print(f"--- DEBUG IN PROXY: Sending Payload -> {q.dict()}")
+--- DEBUG IN PROXY: Sending Payload -> {'query_id': 'test_002', 'question': 'What bills are related to education?', 'retrieval_mode': 'mm', 'top_k': 8}
+--- DEBUG: api/server.py -> query() called. Question: What bills are related to education?
+--- DEBUG: rag/__init__.py -> run_query_and_log() calling run_pipeline(). Question: What bills are related to education?
+--- DEBUG: rag/__init__.py -> run_pipeline() calling build_context().
+--- DEBUG: rag/retriever.py -> build_context() calling snowflake_retriever.retrieve().
+--- DEBUG: rag/snowflake_retriever.py -> retrieve() called querying Snowflake for: What bills are related to education?
+Error connecting to Snowflake: 290404 (08001): 404 Not Found: post your_account_identifier.snowflakecomputing.com:443/session/v1/login-request
+Failed to procure a Snowflake connection. Retrieval aborted.
+--- DEBUG: rag/retriever.py -> build_context() retrieved 0 items.
+--- DEBUG: rag/__init__.py -> run_pipeline() len(ctx['evidence']) right before generate_answer: 0
+--- DEBUG: api/server.py -> query() got result with keys: ['answer', 'ctx', 'p5', 'r10', 'latency_ms', 'faithful', 'meb']
+--- DEBUG IN PROXY: Final JSON Response -> {"pipeline_version": "snowflake_only_v2", "retriever_source": "snowflake_retriever_v2", "retriever_database": "POLICYPULSE_DB", "retriever_schema": "PUBLIC", "retriever_table": "BILLS", "dynamic_sql_from_bills": true, "answer": "Not enough evidence in the retrieved context.", "evidence": [], "metrics": {"latency_ms": 14657.961130142212, "p5": NaN, "r10": NaN, "faithful": true, "missing_evidence_behavior": "Pass"}, "missing_evidence_msg": "Not enough evidence in the retrieved context."}

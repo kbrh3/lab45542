@@ -31,6 +31,8 @@ def run_pipeline(
     state = get_state()
     use_multimodal = (retrieval_mode == "mm")
     
+    print(f"--- DEBUG: rag/__init__.py -> run_pipeline() calling build_context().")
+
     ctx = build_context(
         question,
         page_chunks=state["page_chunks"],
@@ -46,6 +48,7 @@ def run_pipeline(
         use_multimodal=use_multimodal
     )
     
+    print(f"--- DEBUG: rag/__init__.py -> run_pipeline() len(ctx['evidence']) right before generate_answer: {len(ctx.get('evidence', []))}")
     answer = generate_answer(question, ctx)
     return {"answer": answer, "ctx": ctx}
 
@@ -63,6 +66,8 @@ def run_query_and_log(
 
     question = query_item["question"]
     gold_ids = query_item.get("gold_evidence_ids", [])
+
+    print(f"--- DEBUG: rag/__init__.py -> run_query_and_log() calling run_pipeline(). Question: {question}")
 
     t0 = time.time()
     out = run_pipeline(question, retrieval_mode=retrieval_mode)

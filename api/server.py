@@ -62,7 +62,11 @@ def query(q: QueryIn) -> Dict[str, Any]:
     # run_query_and_log expects a dict with query_id, question, gold_evidence_ids
     query_item = {"query_id": q.query_id, "question": q.question, "gold_evidence_ids": []}
 
+    print(f"--- DEBUG: api/server.py -> query() called. Question: {q.question}")
+    
     out = run_query_and_log(query_item, retrieval_mode=q.retrieval_mode)
+
+    print(f"--- DEBUG: api/server.py -> query() got result with keys: {list(out.keys())}")
 
     # Return everything Streamlit needs
     return {

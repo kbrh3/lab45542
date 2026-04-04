@@ -43,6 +43,63 @@ async def verify_token(internal_api_key: str = Header(None)):
 # Initialize once on server start
 init_pipeline(data_dir="data")
 
+print("=== Starting CS 5542 RAG Backend ===")
+print(f"SNOWFLAKE_ACCOUNT present: {'yes' if os.getenv('SNOWFLAKE_ACCOUNT') else 'no'} ({os.getenv('SNOWFLAKE_ACCOUNT')})")
+print(f"SNOWFLAKE_USER present: {'yes' if os.getenv('SNOWFLAKE_USER') else 'no'} ({os.getenv('SNOWFLAKE_USER')})")
+print(f"SNOWFLAKE_PASSWORD present: {'yes' if os.getenv('SNOWFLAKE_PASSWORD') else 'no'}")
+print(f"SNOWFLAKE_WAREHOUSE present: {'yes' if os.getenv('SNOWFLAKE_WAREHOUSE') else 'no'} ({os.getenv('SNOWFLAKE_WAREHOUSE')})")
+print(f"SNOWFLAKE_DATABASE present: {'yes' if os.getenv('SNOWFLAKE_DATABASE') else 'no'} ({os.getenv('SNOWFLAKE_DATABASE')})")
+print(f"SNOWFLAKE_SCHEMA present: {'yes' if os.getenv('SNOWFLAKE_SCHEMA') else 'no'} ({os.getenv('SNOWFLAKE_SCHEMA')})")
+print("====================================")
+
+@app.get("/debug/snowflake")
+def debug_snowflake():
+    from rag.snowflake_retriever import get_snowflake_connection
+    conn = get_snowflake_connection()
+    if not conn:
+        return {"connected": False, "error_type": "Connection Failed", "error_message": "Check server startup logs for exact connection error based on credentials."}
+
+    try:
+        cursor = conn.cursor()
+        cursor.execute("SELECT CURRENT_WAREHOUSE(), CURRENT_DATABASE(), CURRENT_SCHEMA();")
+        wh, db, sch = cursor.fetchone()
+        
+        cursor.execute("SELECT COUNT(*) FROM POLICYPULSE_DB.PUBLIC.BILLS;")
+        bills_count = cursor.fetchone()[0]
+
+        simple_query_worked = False
+        try:
+            cursor.execute("SELECT BILL_ID, BILL_NUMBER, TITLE FROM POLICYPULSE_DB.PUBLIC.BILLS LIMIT 1;")
+            if cursor.fetchone():
+                simple_query_worked = True
+        except Exception as e:
+            pass
+
+        return {
+            "connected": True,
+            "current_warehouse": wh,
+            "current_database": db,
+            "current_schema": sch,
+            "bills_count": bills_count,
+            "simple_query_successful": simple_query_worked,
+            "error_type": None,
+            "error_message": None
+        }
+    except Exception as e:
+        return {
+            "connected": True,
+            "current_warehouse": None,
+            "current_database": None,
+            "current_schema": None,
+            "bills_count": 0,
+            "simple_query_successful": False,
+            "error_type": type(e).__name__,
+            "error_message": str(e)
+        }
+    finally:
+        if conn:
+            conn.close()
+
 class QueryIn(BaseModel):
     query_id: str
     question: str

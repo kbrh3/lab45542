@@ -37,6 +37,19 @@ def get_snowflake_connection():
             role="TRAINING_ROLE"
         )
         return conn
+    except DatabaseError as db_err:
+        err_msg = str(db_err).lower()
+        if "incorrect username or password" in err_msg or "authentication" in err_msg or "not found: post url" in err_msg or "404" in err_msg:
+            print(f"[Snowflake Auth Error] Login/authentication failed: {db_err}")
+        elif "warehouse" in err_msg:
+            print(f"[Snowflake Warehouse Error] Warehouse not found or not authorized: {db_err}")
+        elif "database" in err_msg or "catalog" in err_msg:
+            print(f"[Snowflake Database Error] Database not found or not authorized: {db_err}")
+        elif "schema" in err_msg:
+            print(f"[Snowflake Schema Error] Schema not found or not authorized: {db_err}")
+        else:
+            print(f"[Snowflake Connection Error] {db_err}")
+        return None
     except Exception as e:
         print(f"Error connecting to Snowflake: {e}")
         return None
@@ -142,7 +155,7 @@ def retrieve(query: str, top_k: int = 5) -> List[Dict[str, Any]]:
             results.append(result_item)
             
     except (DatabaseError, ProgrammingError) as db_err:
-        print(f"Snowflake query execution failed: {db_err}")
+        print(f"[Snowflake SQL Compilation/Execution Error] {db_err}")
     except Exception as e:
         print(f"Unexpected error during retrieval: {e}")
     finally:

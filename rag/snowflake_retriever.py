@@ -19,17 +19,18 @@ def get_snowflake_connection():
         # Use only standard SNOWFLAKE_* prefixes
         account = os.getenv("SNOWFLAKE_ACCOUNT")
         user = os.getenv("SNOWFLAKE_USER")
+        password = os.getenv("SNOWFLAKE_PASSWORD")
         warehouse = os.getenv("SNOWFLAKE_WAREHOUSE")
         database = os.getenv("SNOWFLAKE_DATABASE")
         schema = os.getenv("SNOWFLAKE_SCHEMA")
 
-        if not all([account, user, warehouse, database, schema]):
+        if not all([account, user, password, warehouse, database, schema]):
             print("Warning: Missing one or more explicit SNOWFLAKE_* environment variables.")
 
         conn = snowflake.connector.connect(
             account=account,
             user=user,
-            authenticator="externalbrowser",
+            password=password,
             warehouse=warehouse,
             database=database,
             schema=schema,

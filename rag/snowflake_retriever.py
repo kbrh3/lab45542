@@ -68,6 +68,7 @@ def retrieve(query: str, top_k: int = 5) -> List[Dict[str, Any]]:
     results = []
     
     print(f"--- DEBUG: rag/snowflake_retriever.py -> retrieve() called querying Snowflake for: {query}")
+    print(f"--- DEBUG: Original query: {query}")
     
     if not query or not query.strip():
         return results
@@ -81,61 +82,68 @@ def retrieve(query: str, top_k: int = 5) -> List[Dict[str, Any]]:
     try:
         cursor = conn.cursor()
         
-        # We use ILIKE with wildcards for simple keyword matching
-        # Clean and wrap the query for SQL wildcard search
-        keyword = f"%{query.strip()}%"
+        # Extract meaningful keywords
+        stop_words = {"what", "are", "related", "to", "the", "is", "of", "in", "for", "on", "a", "an", "and", "or", "with", "bills", "bill"}
+        words = query.strip().lower().replace("?", "").replace(".", "").split()
+        keywords = [w for w in words if w not in stop_words]
         
+        print(f"--- DEBUG: Extracted keywords: {keywords}")
+        
+        # Build parameters like: "%education%"
+        if keywords:
+            keyword = f"%{keywords[0]}%" 
+        else:
+            keyword = f"%{query.strip().lower()}%"
+            
         sql = """
-            SELECT 
+            SELECT
                 BILL_ID,
                 BILL_NUMBER,
                 TITLE,
                 DESCRIPTION,
                 STATUS_DESC,
                 COMMITTEE,
-                LAST_ACTION
-            FROM BILLS
-            WHERE 
-                BILL_NUMBER ILIKE %s OR 
-                TITLE ILIKE %s OR 
+                LAST_ACTION_DATE
+            FROM POLICYPULSE_DB.PUBLIC.BILLS
+            WHERE
+                TITLE ILIKE %s OR
                 DESCRIPTION ILIKE %s OR
                 STATUS_DESC ILIKE %s OR
-                COMMITTEE ILIKE %s OR
-                LAST_ACTION ILIKE %s
-            ORDER BY STATUS_DATE DESC, LAST_ACTION_DATE DESC
+                COMMITTEE ILIKE %s
+            ORDER BY STATUS_DATE DESC
             LIMIT %s
         """
         
-        # Execute parameterized query to safely prevent SQL injection
-        params = (keyword, keyword, keyword, keyword, keyword, keyword, top_k)
+        # Exact params mapping to the 4 ILIKE conditions + LIMIT
+        params = (keyword, keyword, keyword, keyword, top_k)
         
-        print(f"--- DEBUG: SQL Query being executed:\n{sql}")
-        print(f"--- DEBUG: With parameters: {params}")
+        print(f"--- DEBUG: Final SQL parameters: {params}")
         
         cursor.execute(sql, params)
+        print("--- DEBUG: cursor.execute() succeeded.")
         
         all_rows = cursor.fetchall()
-        print(f"--- DEBUG: Number of raw rows returned: {len(all_rows)}")
-        print(f"--- DEBUG: First 2 raw rows returned: {all_rows[:2]}")
+        print(f"--- DEBUG: Number of rows returned: {len(all_rows)}")
+        print(f"--- DEBUG: First 2 raw rows: {all_rows[:2]}")
         
         for row in all_rows:
-            # Extract row fields gracefully (handling potential Null values)
+            # Match schema: BILL_ID, BILL_NUMBER, TITLE, DESCRIPTION, STATUS_DESC, COMMITTEE, LAST_ACTION_DATE
             bill_id = row[0]
             bill_number = row[1] or ""
             title = row[2] or ""
             description = row[3] or ""
             status_desc = row[4] or ""
             committee = row[5] or ""
-            last_action = row[6] or ""
+            last_action_date = row[6] or ""
             
-            # Construct formatted RETRIEVAL_TEXT
+            # Construct formatted RETRIEVAL_TEXT requiring TITLE, DESCRIPTION, STATUS_DESC
             retrieval_text = (
                 f"Bill Number: {bill_number}\n"
                 f"Title: {title}\n"
                 f"Description: {description}\n"
                 f"Status: {status_desc}\n"
                 f"Committee: {committee}\n"
-                f"Last Action: {last_action}"
+                f"Last Action Date: {last_action_date}"
             ).strip()
             
             # Format to pipeline context requirement
@@ -145,17 +153,21 @@ def retrieve(query: str, top_k: int = 5) -> List[Dict[str, Any]]:
                 "modality": "text",
                 "id": f"bill::{bill_id}",
                 "raw_score": 1.0,
-                "fused_score": 1.0, # Given equal weight conceptually 
+                "fused_score": 1.0, # Required
                 "text": retrieval_text,
                 "path": None,
-                "citation_tag": f"[bill::{bill_id}]",
+                "citation_tag": f"[bill::{bill_id}]", # Required
                 "source": f"{db_name}.{schema_name}.BILLS",
                 "page_num": None
             }
             results.append(result_item)
             
-    except (DatabaseError, ProgrammingError) as db_err:
-        print(f"[Snowflake SQL Compilation/Execution Error] {db_err}")
+        print(f"--- DEBUG: Number of evidence objects built: {len(results)}")
+            
+    except snowflake.connector.errors.ProgrammingError as db_err:
+        print(f"--- DEBUG: Snowflake SQL Compilation/Execution Error: {db_err}")
+    except snowflake.connector.errors.DatabaseError as db_err:
+        print(f"--- DEBUG: Snowflake Database Error: {db_err}")
     except Exception as e:
         print(f"Unexpected error during retrieval: {e}")
     finally:

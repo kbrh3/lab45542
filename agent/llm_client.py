@@ -55,18 +55,42 @@ def chat(messages: List[Dict[str, str]], tools: Optional[List[Dict[str, Any]]] =
             else:
                 gemini_history.append({"role": role, "parts": [content]})
                 
-        # Initialize
+        # Fallback models safely prioritized
+        fallback_models = ['gemini-2.5-flash', 'gemini-3-flash-preview', 'gemini-2.0-flash']
+        
+        # Startup logs
+        sdk_version = getattr(genai, '__version__', 'unknown')
+        print(f"--- DEBUG: Gemini SDK matching google.generativeai (Version: {sdk_version})")
+        print("--- DEBUG: API Version in use: likely v1beta based on SDK defaults.")
+        
+        response = None
         meta = {}
-        try:
-            model = genai.GenerativeModel('gemini-1.5-flash', tools=tools)
-        except Exception as e:
-            model = genai.GenerativeModel('gemini-1.5-flash')
-            meta["tools_enabled"] = False
-            meta["tools_error"] = str(e)
         
-        chat_session = model.start_chat(history=gemini_history)
+        for model_name in fallback_models:
+            print(f"--- DEBUG: Attempting chat with model: {model_name}")
+            try:
+                try:
+                    model = genai.GenerativeModel(model_name, tools=tools)
+                except Exception as e:
+                    model = genai.GenerativeModel(model_name)
+                    meta[f"{model_name}_tools_error"] = str(e)
+                
+                chat_session = model.start_chat(history=gemini_history)
+                response = chat_session.send_message(last_message)
+                
+                print(f"--- DEBUG: Selected model: {model_name} successfully executed generateContent.")
+                break  # Complete success
+            except Exception as e:
+                err_str = str(e)
+                print(f"--- DEBUG: Model {model_name} failed: {err_str}")
+                if "404" in err_str or "not found" in err_str.lower():
+                    continue  # Try next fallback automatically
+                else:
+                    # Depending on error, it might be quota, but we fallback anyway
+                    continue
         
-        response = chat_session.send_message(last_message)
+        if not response:
+            raise ValueError(f"All fallback models failed to generate content. Last error: {err_str}")
         
         # Parse output for tools
         tool_calls = []

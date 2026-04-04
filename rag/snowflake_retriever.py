@@ -13,34 +13,40 @@ from typing import List, Dict, Any
 def get_snowflake_connection():
     """
     Helper function to establish a connection to Snowflake.
-    Uses explicit SNOWFLAKE_* environment variables for credentials and configuration.
+    Uses Programmatic Access Token (PAT) authentication to bypass TOTP MFA issues.
     """
     try:
-        # Use only standard SNOWFLAKE_* prefixes
         account = os.getenv("SNOWFLAKE_ACCOUNT")
         user = os.getenv("SNOWFLAKE_USER")
-        password = os.getenv("SNOWFLAKE_PASSWORD")
+        pat = os.getenv("SNOWFLAKE_PAT")
         warehouse = os.getenv("SNOWFLAKE_WAREHOUSE")
         database = os.getenv("SNOWFLAKE_DATABASE")
         schema = os.getenv("SNOWFLAKE_SCHEMA")
 
-        if not all([account, user, password, warehouse, database, schema]):
-            print("Warning: Missing one or more explicit SNOWFLAKE_* environment variables.")
+        env_vars_present = all([account, user, pat, warehouse, database, schema])
+        print(f"--- DEBUG: Snowflake Connection: Env vars present: {env_vars_present}")
+        
+        if not env_vars_present:
+            print("Warning: Missing one or more required SNOWFLAKE_* environment variables (including SNOWFLAKE_PAT).")
+        
+        print("--- DEBUG: Snowflake Connection: Attempting PAT / OAuth authentication...")
 
         conn = snowflake.connector.connect(
             account=account,
             user=user,
-            password=password,
+            password=pat,
             warehouse=warehouse,
             database=database,
             schema=schema,
             role="TRAINING_ROLE"
         )
+        
+        print("--- DEBUG: Snowflake Connection: Successfully connected!")
         return conn
     except DatabaseError as db_err:
         err_msg = str(db_err).lower()
-        if "incorrect username or password" in err_msg or "authentication" in err_msg or "not found: post url" in err_msg or "404" in err_msg:
-            print(f"[Snowflake Auth Error] Login/authentication failed: {db_err}")
+        if "incorrect username or password" in err_msg or "authentication" in err_msg or "not found: post url" in err_msg or "oauth" in err_msg or "404" in err_msg:
+            print(f"[Snowflake Auth Error] PAT Login/authentication failed: {db_err}")
         elif "warehouse" in err_msg:
             print(f"[Snowflake Warehouse Error] Warehouse not found or not authorized: {db_err}")
         elif "database" in err_msg or "catalog" in err_msg:
@@ -48,10 +54,10 @@ def get_snowflake_connection():
         elif "schema" in err_msg:
             print(f"[Snowflake Schema Error] Schema not found or not authorized: {db_err}")
         else:
-            print(f"[Snowflake Connection Error] {db_err}")
+            print(f"[Snowflake Connection Error] Failed with DatabaseError: {db_err}")
         return None
     except Exception as e:
-        print(f"Error connecting to Snowflake: {e}")
+        print(f"--- DEBUG: Snowflake Connection: Failed with exception: {e}")
         return None
 
 def retrieve(query: str, top_k: int = 5) -> List[Dict[str, Any]]:

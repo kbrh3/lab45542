@@ -12,7 +12,7 @@ import os
 
 from rag.config import TOP_K_TEXT, TOP_K_IMAGES, TOP_K_EVIDENCE, ALPHA, MISSING_EVIDENCE_MSG
 from rag.state import init_pipeline, get_state
-from rag.retriever import build_context
+from rag.pipeline import build_context
 from rag.generator import generate_answer
 from rag.evaluator import precision_at_k_ids, recall_at_k_ids, faithfulness_heuristic, missing_evidence_behavior
 from rag.logger import log_query_metrics
@@ -35,12 +35,6 @@ def run_pipeline(
 
     ctx = build_context(
         question,
-        page_chunks=state["page_chunks"],
-        image_items=state["image_items"],
-        text_vec=state["text_vec"],
-        text_X=state["text_X"],
-        img_vec=state["img_vec"],
-        img_X=state["img_X"],
         top_k_text=top_k_text,
         top_k_images=top_k_images,
         top_k_evidence=top_k_evidence,

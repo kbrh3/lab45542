@@ -7,9 +7,6 @@ import os
 import glob
 from typing import Dict, Any
 
-from rag.config import caption_map
-from rag.data_loader import extract_pdf_pages, load_images
-from rag.indexer import build_tfidf_index_text, build_tfidf_index_images
 from rag.logger import ensure_logfile
 
 _STATE: Dict[str, Any] = {

@@ -1,0 +1,90 @@
+
+=== retriever.py ===
+.\rag\retriever.py:3: rag/retriever.py
+.\rag\retriever.py:53: print(f"--- DEBUG: rag/retriever.py -> build_context() calling snowflake_retriever.retrieve().")
+.\rag\retriever.py:58: print(f"--- DEBUG: rag/retriever.py -> build_context() retrieved {len(fused)} items.")
+.\rag\__init__.py:15: from rag.retriever import build_context
+.\related_work\erag\erag_run_on_our_retrieval.py:44: Script to run eRAG validation on our retriever outputs.
+.\related_work\erag\erag_run_on_our_retrieval.py:68: # Call the actual retriever pipeline
+
+=== pipeline.py ===
+.\tools.py:10: # Import existing RAG pipeline
+.\tools.py:11: from rag.pipeline import run_query_and_log
+.\tools.py:15: Query the existing RAG pipeline to retrieve information and synthesized answers.
+.\tool_schemas.py:12: "description": "Query the existing RAG pipeline to retrieve information and synthesized answers based on a knowledge base.",
+.\tool_schemas.py:18: "description": "The question to ask the RAG pipeline."
+.\agent\runner.py:14: from rag.pipeline import MISSING_EVIDENCE_MSG
+.\app\main.py:61: * **Classic Mode**: Returns answers directly from the retrieval pipeline based on the provided context.
+.\rag\config.py:4: Configuration constants and predefined settings for the RAG pipeline.
+.\rag\config.py:22: "question": "What is the overall SQLENS pipeline and what happens in each step?",
+.\rag\config.py:37: "question": "Using the figure of the SQLENS pipeline, list the pipeline stages in order.",
+.\rag\config.py:49: "Screenshot 2026-02-12 085908.png": "SQLENS pipeline: Error Detector -> Error Selector -> Error Fixer -> SQL Auditor",
+.\rag\models.py:4: Data classes for the RAG pipeline.
+.\rag\pipeline.py:3: rag/pipeline.py
+.\rag\pipeline.py:335: - runs pipeline
+.\rag\snowflake_retriever.py:72: List[Dict[str, Any]]: A list of dictionaries formatted exactly as expected by the RAG pipeline.
+.\rag\snowflake_retriever.py:155: # Format to pipeline context requirement
+.\rag\__init__.py:29: Core pipeline logic combining modules.
+.\rag\__init__.py:60: API Interface: runs pipeline, computes metrics, and logs to CSV.
+.\related_work\erag\erag_run_on_our_retrieval.py:8: from rag.pipeline import init_pipeline, build_context
+.\related_work\erag\erag_run_on_our_retrieval.py:52: # Initialize pipeline with project roots data directory to avoid missing data RuntimeError
+.\related_work\erag\erag_run_on_our_retrieval.py:68: # Call the actual retriever pipeline
+.\related_work\erag\erag_run_on_our_retrieval.py:69: # `build_context` fetches text and img evidence using the pipeline state
+.\scripts\test_agent.py:21: ("Medium (Two Tools)", "What is the SQLENS pipeline? Also show bills by year."),
+.\scripts\test_tools.py:21: res_rag = rag_query("What is the overall SQLENS pipeline and what happens in each step?")
+.\scripts\test_tool_registry.py:18: "query": "What is the overall SQLENS pipeline and what happens in each step?",
+.\tests\test_smoke.py:15: from rag.pipeline import init_pipeline, run_pipeline, _STATE
+.\tests\test_smoke.py:30: page.insert_text((50, 50), "SQLENS pipeline is a test system.")
+.\tests\test_smoke.py:42: # Initialize pipeline pointing to test data
+
+=== state.py ===
+.\app\main.py:71: # Agent Mode state
+.\rag\pipeline.py:113: # Pipeline state (built once)
+.\rag\state.py:3: rag/state.py
+.\rag\__init__.py:14: from rag.state import init_pipeline, get_state
+.\rag\__init__.py:31: state = get_state()
+.\rag\__init__.py:38: page_chunks=state["page_chunks"],
+.\rag\__init__.py:39: image_items=state["image_items"],
+.\rag\__init__.py:40: text_vec=state["text_vec"],
+.\rag\__init__.py:41: text_X=state["text_X"],
+.\rag\__init__.py:42: img_vec=state["img_vec"],
+.\rag\__init__.py:43: img_X=state["img_X"],
+.\rag\__init__.py:62: state = get_state()
+.\rag\__init__.py:63: if not state["initialized"]:
+.\rag\__init__.py:65: state = get_state()
+.\rag\__init__.py:100: log_query_metrics(state["log_file"], row)
+.\rag\__init__.py:114: state = get_state()
+.\rag\__init__.py:115: if not state["initialized"]:
+.\rag\__init__.py:117: state = get_state()
+.\rag\__init__.py:120: for p in state["pdfs"]:
+.\rag\__init__.py:131: state = get_state()
+.\rag\__init__.py:132: if not state["initialized"]:
+.\rag\__init__.py:134: state = get_state()
+.\rag\__init__.py:138: for ch in state["page_chunks"]:
+.\related_work\erag\erag_run_on_our_retrieval.py:69: # `build_context` fetches text and img evidence using the pipeline state
+.\tests\test_smoke.py:38: # Reset state just in case
+
+=== main.py ===
+.\scripts\test_agent.py:11: def main():
+.\scripts\test_agent.py:44: main()
+.\scripts\test_llm_client.py:11: def main():
+.\scripts\test_llm_client.py:46: main()
+.\scripts\test_tool_registry.py:12: def main():
+.\scripts\test_tool_registry.py:53: main()
+.\tests\test_smoke.py:73: unittest.main()
+
+=== data_loader.py ===
+.\rag\data_loader.py:3: rag/data_loader.py
+.\rag\state.py:11: from rag.data_loader import extract_pdf_pages, load_images
+
+=== indexer.py ===
+.\rag\indexer.py:3: rag/indexer.py
+.\rag\state.py:12: from rag.indexer import build_tfidf_index_text, build_tfidf_index_images
+
+=== models.py ===
+.\agent\llm_client.py:58: # Fallback models safely prioritized
+.\agent\llm_client.py:93: raise ValueError(f"All fallback models failed to generate content. Last error: {err_str}")
+.\rag\data_loader.py:12: from rag.models import TextChunk, ImageItem
+.\rag\indexer.py:10: from rag.models import TextChunk, ImageItem
+.\rag\models.py:3: rag/models.py
+.\rag\retriever.py:11: from rag.models import TextChunk, ImageItem

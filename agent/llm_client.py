@@ -56,7 +56,8 @@ def chat(messages: List[Dict[str, str]], tools: Optional[List[Dict[str, Any]]] =
                 gemini_history.append({"role": role, "parts": [content]})
                 
         # Fallback models safely prioritized
-        fallback_models = ['gemini-2.5-flash', 'gemini-3-flash-preview', 'gemini-2.0-flash']
+        # fallback_models = ['gemini-2.5-flash', 'gemini-3-flash-preview', 'gemini-2.0-flash']
+        fallback_models = ['gemini-3.1-flash-lite-preview']
         
         # Startup logs
         sdk_version = getattr(genai, '__version__', 'unknown')

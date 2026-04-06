@@ -89,7 +89,7 @@ def run_agent(user_message: str, history: Optional[List[Dict[str, str]]] = None,
                     msg_content = f"Tool '{name}' returned:\n{json.dumps(tool_res.get('data', {}))}"
                     
                 # Append tool result to messages as a "tool" role
-                messages.append({"role": "tool", "name": name, "content": msg_content})
+                messages.append({"role": "context", "name": name, "content": msg_content})
                 
         # Compile final metrics
         latency = (time.time() - t0) * 1000.0

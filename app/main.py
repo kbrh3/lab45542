@@ -193,7 +193,10 @@ if agent_mode_on:
 
                 if r.status_code == 200:
                     data = r.json()
-                    answer = data.get("answer", "")
+                    try:
+                        answer = json.loads(data.get("answer", ""))['answer']
+                    except Exception:
+                        answer = data.get("answer", "")
                     
                     # Construct assistant message with all metadata
                     assistant_msg = {
